@@ -1,18 +1,23 @@
 # spotify_utils.py
 
+import spotipy
 from .spotify_client import sp
 
 
 def fetch_top_tracks(sp, time_range, limit, offset):
-    results = sp.current_user_top_tracks(
-        time_range=time_range, limit=limit, offset=offset
-    )
-    tracks = process_spotify_results(results)
+    if sp.auth:
+        results = sp.current_user_top_tracks(
+            time_range=time_range, limit=limit, offset=offset
+        )
+        tracks = process_spotify_results(results)
 
-    # Fetch and add audio features for each track
-    add_audio_features_to_tracks(sp, tracks)
+        # Fetch and add audio features for each track
+        add_audio_features_to_tracks(sp, tracks)
 
-    return tracks
+        return tracks
+    else:
+        print("No token")
+        return []
 
 
 # -----------------------------------------

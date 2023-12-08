@@ -12,6 +12,8 @@ from .views import (
     delete_trending_track,
     delete_all_trending_tracks,
     export_trending_tracks,
+    spotify_auth,
+    spotify_callback,
 )
 
 urlpatterns = [
@@ -34,4 +36,6 @@ urlpatterns = [
     ),
     path("export-csv/", export_trending_tracks, name="export_csv"),
     path("accounts/", include("django.contrib.auth.urls")),
+    path("spotify-auth/", spotify_auth, name="spotify_auth"),
+    path("spotify-callback/", spotify_callback, name="spotify_callback"),
 ]

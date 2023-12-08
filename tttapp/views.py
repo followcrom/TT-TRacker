@@ -32,27 +32,55 @@ from django.http import JsonResponse
 from .models import TrendingTracks
 
 from .spotify_utils import fetch_top_tracks, process_spotify_results
-from .spotify_client import sp
+from .spotify_client import get_spotipy_client, sp
 
 
 # -----------------------------------------
 
-# def liked_tracks(request):
-#     results = sp.current_user_saved_tracks()
-#     liked_tracks = process_spotify_results(results)
+from spotipy.oauth2 import SpotifyOAuth
+from django.shortcuts import redirect
+from django.urls import reverse
+from django.conf import settings
 
-#     return render(
-#         request,
-#         "top_tracks.html",
-#         {
-#             "tracks": liked_tracks,
-#         },
-#     )
+
+def spotify_auth(request):
+    sp_oauth = SpotifyOAuth(
+        client_id=settings.SPOTIFY_CLIENT_ID,
+        client_secret=settings.SPOTIFY_CLIENT_SECRET,
+        redirect_uri=request.build_absolute_uri(reverse("spotify_callback")),
+        scope="user-library-read user-read-playback-state",
+    )
+    auth_url = sp_oauth.get_authorize_url()
+    return redirect(auth_url)
+
+
+# -----------------------------------------
+
+import time
+
+
+def spotify_callback(request):
+    sp_oauth = SpotifyOAuth(
+        client_id=settings.SPOTIFY_CLIENT_ID,
+        client_secret=settings.SPOTIFY_CLIENT_SECRET,
+        redirect_uri=request.build_absolute_uri(reverse("spotify_callback")),
+        scope="user-library-read user-read-playback-state",
+    )
+    code = request.GET.get("code")
+    token_info = sp_oauth.get_access_token(code)
+    token_info["expires_at"] = time.time() + token_info["expires_in"]
+    request.session["token_info"] = token_info  # Store all token info in session
+    return redirect("home")
+
 
 # -----------------------------------------
 
 
 def top_tracks(request, time_range, name, offset=0):
+    sp = get_spotipy_client(request)
+    if not sp.auth:
+        # Redirect to Spotify auth or handle the lack of a valid token
+        return redirect("spotify_auth")
     offset = int(offset)
     tracks = fetch_top_tracks(sp, time_range, limit=4, offset=offset)
 

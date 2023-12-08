@@ -60,11 +60,13 @@ def spotify_auth(request):
 
 
 def spotify_callback(request):
+    print("Callback")
     sp_oauth = get_spotify_oauth()
     code = request.GET.get("code")
     print("Code: ", code)
     token_info = sp_oauth.get_access_token(code)
-    request.session["token_info"] = token_info  # Store token info in the session
+    request.session["token_info"] = token_info
+    print("Token info: ", token_info)
     return redirect("home")
 
 

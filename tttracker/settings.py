@@ -52,11 +52,10 @@ DEBUG = False
 #     SPOTIFY_REDIRECT_URI = "https://toptracktracker.onrender.com/callback/"
 
 ALLOWED_HOSTS = [
-    "localhost",
-    "127.0.0.1",
-    "https://toptracktracker.onrender.com",
+    # "localhost",
+    # "127.0.0.1",
     "toptracktracker.onrender.com",
-    "www.toptracktracker.onrender.com",
+    # "www.toptracktracker.onrender.com",
 ]
 
 

@@ -20,69 +20,85 @@ OAuth 2.0 is required for authenticating all API requests.
 """
 
 
-from django.shortcuts import render
-
-# from django.views.decorators.csrf import csrf_exempt
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render
+from django.urls import reverse
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
-
-
+from django.views.decorators.http import require_POST
 from django.http import JsonResponse
 
 from .models import TrendingTracks
 
-from .spotify_utils import fetch_top_tracks, process_spotify_results
-from .spotify_client import get_spotipy_client, sp
+import time
+
+from spotipy import Spotify
+from spotipy.oauth2 import SpotifyOAuth
+
+# -----------------------------------------
+
+
+def get_spotify_oauth():
+    return SpotifyOAuth(
+        client_id=settings.SPOTIFY_CLIENT_ID,
+        client_secret=settings.SPOTIFY_CLIENT_SECRET,
+        redirect_uri=settings.SPOTIFY_REDIRECT_URI,
+        scope="user-library-read user-read-playback-state",
+    )
 
 
 # -----------------------------------------
 
-from spotipy.oauth2 import SpotifyOAuth
-from django.shortcuts import redirect
-from django.urls import reverse
-from django.conf import settings
-
 
 def spotify_auth(request):
-    sp_oauth = SpotifyOAuth(
-        client_id=settings.SPOTIFY_CLIENT_ID,
-        client_secret=settings.SPOTIFY_CLIENT_SECRET,
-        redirect_uri=request.build_absolute_uri(reverse("spotify_callback")),
-        scope="user-library-read user-read-playback-state",
-    )
+    sp_oauth = get_spotify_oauth()
     auth_url = sp_oauth.get_authorize_url()
+    print("Auth URL: ", auth_url)
     return redirect(auth_url)
 
 
 # -----------------------------------------
 
-import time
-
 
 def spotify_callback(request):
-    sp_oauth = SpotifyOAuth(
-        client_id=settings.SPOTIFY_CLIENT_ID,
-        client_secret=settings.SPOTIFY_CLIENT_SECRET,
-        redirect_uri=request.build_absolute_uri(reverse("spotify_callback")),
-        scope="user-library-read user-read-playback-state",
-    )
+    sp_oauth = get_spotify_oauth()
     code = request.GET.get("code")
+    print("Code: ", code)
     token_info = sp_oauth.get_access_token(code)
-    token_info["expires_at"] = time.time() + token_info["expires_in"]
-    request.session["token_info"] = token_info  # Store all token info in session
+    request.session["token_info"] = token_info  # Store token info in the session
     return redirect("home")
 
 
 # -----------------------------------------
 
 
+def get_spotipy_client(request):
+    token_info = request.session.get("token_info", {})
+    if not token_info:
+        print("No token info")
+        return None
+
+    if time.time() > token_info["expires_at"]:
+        sp_oauth = get_spotify_oauth()
+        token_info = sp_oauth.refresh_access_token(token_info["refresh_token"])
+        print("Refresh token: ", token_info)
+        request.session["token_info"] = token_info
+
+    return Spotify(auth=token_info["access_token"])
+
+
+# -----------------------------------------
+
+from .spotify_utils import fetch_top_tracks
+
+
 def top_tracks(request, time_range, name, offset=0):
     sp = get_spotipy_client(request)
-    if not sp.auth:
-        # Redirect to Spotify auth or handle the lack of a valid token
+    if not sp:
         return redirect("spotify_auth")
+
     offset = int(offset)
     tracks = fetch_top_tracks(sp, time_range, limit=4, offset=offset)
+    print("Tracks in")
 
     return render(
         request,
@@ -176,12 +192,10 @@ def add_to_trending(request):
 
 
 def view_trending_tracks(request):
-    # Fetch all trending tracks from the database
     trending_tracks = TrendingTracks.objects.all().order_by("-id")
     # trending_tracks = TrendingTracks.objects.all()
 
     name = "Trending Tracks"
-    # Render them using a template
     return render(
         request,
         "trending_tracks.html",
@@ -190,20 +204,17 @@ def view_trending_tracks(request):
 
 
 # -----------------------------------------
-from django.views.decorators.http import require_POST
 
 
 @require_POST  # This view should only accept POST requests
 def delete_trending_track(request, track_id):
-    # Retrieve and delete the specific track
     try:
         track = TrendingTracks.objects.get(id=track_id)
         track.delete()
     except TrendingTracks.DoesNotExist:
-        # Handle the case where the track does not exist
         pass
 
-    return redirect("view_trending_tracks")  # Redirect back to the trending tracks view
+    return redirect("view_trending_tracks")
 
 
 # -----------------------------------------
@@ -305,6 +316,11 @@ def export_trending_tracks(request):
 
 
 def start_spotify_playback(request):
+    sp = get_spotipy_client(request)
+    if not sp:
+        # Redirect to Spotify auth or handle the lack of a valid token
+        return redirect("spotify_auth")
+
     device_id = None
 
     try:

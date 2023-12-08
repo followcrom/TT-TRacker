@@ -37,5 +37,5 @@ urlpatterns = [
     path("export-csv/", export_trending_tracks, name="export_csv"),
     path("accounts/", include("django.contrib.auth.urls")),
     path("spotify-auth/", spotify_auth, name="spotify_auth"),
-    path("spotify-callback/", spotify_callback, name="spotify_callback"),
+    path("callback/", spotify_callback, name="spotify_callback"),
 ]

@@ -30,6 +30,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
 SPOTIFY_CLIENT_ID = os.environ.get("SPOTIFY_CLIENT_ID")
 SPOTIFY_CLIENT_SECRET = os.environ.get("SPOTIFY_CLIENT_SECRET")
+SPOTIFY_REDIRECT_URI = "https://toptracktracker.onrender.com/callback/"
 
 AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
@@ -43,13 +44,12 @@ AWS_S3_OBJECT_PARAMETERS = {"CacheControl": "max-age=86400"}
 DEBUG = False
 
 # Determine the environment context
-DEVELOPMENT_MODE = os.environ.get("DEVELOPMENT_MODE", "True") == "True"
+# DEVELOPMENT_MODE = os.environ.get("DEVELOPMENT_MODE", "True") == "True"
 
-# Set the redirect URI based on the environment
-if DEVELOPMENT_MODE:
-    SPOTIFY_REDIRECT_URI = "http://127.0.0.1:8000/spotify-callback/"
-else:
-    SPOTIFY_REDIRECT_URI = "https://toptracktracker.onrender.com/callback/"
+# if DEVELOPMENT_MODE:
+#     SPOTIFY_REDIRECT_URI = "http://127.0.0.1:8000/spotify-callback/"
+# else:
+#     SPOTIFY_REDIRECT_URI = "https://toptracktracker.onrender.com/callback/"
 
 ALLOWED_HOSTS = [
     "localhost",

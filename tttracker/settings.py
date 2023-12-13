@@ -36,7 +36,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
 SPOTIFY_CLIENT_ID = os.environ.get("SPOTIFY_CLIENT_ID")
 SPOTIFY_CLIENT_SECRET = os.environ.get("SPOTIFY_CLIENT_SECRET")
-# SPOTIFY_REDIRECT_URI = "https://toptracktracker.onrender.com/callback/"
+SPOTIFY_REDIRECT_URI = "https://toptracktracker.onrender.com/callback/"
 
 AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
@@ -49,45 +49,24 @@ LASTFM_API_KEY = os.environ.get("LASTFM_API_KEY")
 LASTFM_USERNAME = os.environ.get("LASTFM_USERNAME")
 
 
-# DEV / PRODUCTION
+# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-
+# Determine the environment context
 # DEVELOPMENT_MODE = os.environ.get("DEVELOPMENT_MODE", "True") == "True"
-DEVELOPMENT_MODE = False
+# DEVELOPMENT_MODE = False
 
+# if DEVELOPMENT_MODE:
+#     SPOTIFY_REDIRECT_URI = "http://127.0.0.1:8000/callback/"
+# else:
+#     SPOTIFY_REDIRECT_URI = "https://toptracktracker.onrender.com/callback/"
 
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-
-
-if DEVELOPMENT_MODE:
-    SPOTIFY_REDIRECT_URI = "http://127.0.0.1:8000/callback/"
-
-    # Local static settings
-    STATIC_URL = "/static/"
-    STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
-
-    ALLOWED_HOSTS = [
-        "localhost",
-        "127.0.0.1",
-    ]
-else:
-    SPOTIFY_REDIRECT_URI = "https://toptracktracker.onrender.com/callback/"
-
-    # S3 Static settings
-    STATIC_URL = "/static/"
-    STATIC_LOCATION = "static"
-    AWS_S3_CUSTOM_DOMAIN = "%s.s3.amazonaws.com" % AWS_STORAGE_BUCKET_NAME
-    STATIC_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, STATIC_LOCATION)
-    STATICFILES_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
-
-    STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
-    STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
-
-    ALLOWED_HOSTS = [
-        "toptracktracker.onrender.com",
-        "www.toptracktracker.onrender.com",
-    ]
+ALLOWED_HOSTS = [
+    "localhost",
+    "127.0.0.1",
+    "toptracktracker.onrender.com",
+    "www.toptracktracker.onrender.com",
+]
 
 
 # Application definition
@@ -178,6 +157,29 @@ USE_I18N = True
 
 USE_TZ = True
 
+
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/4.2/howto/static-files/
+
+# Local static settings
+# STATIC_URL = "/static/"  -> uncomment to `collectstatic``
+# STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
+
+
+# S3 Static settings
+STATIC_LOCATION = "static"
+AWS_S3_CUSTOM_DOMAIN = "%s.s3.amazonaws.com" % AWS_STORAGE_BUCKET_NAME
+STATIC_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, STATIC_LOCATION)
+STATICFILES_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+
+STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+
+
+# Default primary key field type
+# https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
+
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "home"

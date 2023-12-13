@@ -13,11 +13,11 @@ from .views import (
     delete_all_trending_tracks,
     export_trending_tracks,
     upload_trending_tracks,
-    # spotify_auth,
-    # spotify_callback,
+    spotify_auth,
+    spotify_callback,
 )
 
-from .spotify_client import spotify_auth, spotify_callback
+# from .spotify_client import spotify_auth, spotify_callback
 
 urlpatterns = [
     path("top-tracks/short/", top_tracks_short_term, name="top_tracks_short_term"),

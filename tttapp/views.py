@@ -28,89 +28,90 @@ from django.conf import settings
 from django.shortcuts import redirect
 
 
-# def get_spotify_oauth():
-#     return SpotifyOAuth(
-#         client_id=settings.SPOTIFY_CLIENT_ID,
-#         client_secret=settings.SPOTIFY_CLIENT_SECRET,
-#         redirect_uri=settings.SPOTIFY_REDIRECT_URI,
-#         scope="user-library-read user-read-playback-state",
-#     )
-
-
-# # -----------------------------------------
-
-
-# def spotify_auth(request):
-#     sp_oauth = get_spotify_oauth()
-#     auth_url = sp_oauth.get_authorize_url()
-#     print("Auth URL: ", auth_url)
-#     return redirect(auth_url)
-
-
-# # -----------------------------------------
-
-
-# def spotify_callback(request):
-#     print("Callback")
-#     sp_oauth = get_spotify_oauth()
-#     code = request.GET.get("code")
-#     print("Code: ", code)
-#     token_info = sp_oauth.get_access_token(code)
-#     request.session["token_info"] = token_info
-#     print("Token info: ", token_info)
-#     return redirect("home")
-
-
-# # -----------------------------------------
-
-
-# def get_spotipy_client(request):
-#     token_info = request.session.get("token_info", {})
-#     if not token_info:
-#         print("No token info")
-#         return None
-
-#     if time.time() > token_info["expires_at"]:
-#         sp_oauth = get_spotify_oauth()
-#         token_info = sp_oauth.refresh_access_token(token_info["refresh_token"])
-#         print("Refresh token: ", token_info)
-#         request.session["token_info"] = token_info
-
-#     return Spotify(auth=token_info["access_token"])
+def get_spotify_oauth():
+    return SpotifyOAuth(
+        client_id=settings.SPOTIFY_CLIENT_ID,
+        client_secret=settings.SPOTIFY_CLIENT_SECRET,
+        redirect_uri=settings.SPOTIFY_REDIRECT_URI,
+        scope="user-library-read user-read-playback-state",
+    )
 
 
 # -----------------------------------------
 
-from .spotify_client import (
-    get_spotipy_client,
-    get_spotify_oauth,
-    spotify_auth,
-    spotify_callback,
-)
+
+def spotify_auth(request):
+    sp_oauth = get_spotify_oauth()
+    auth_url = sp_oauth.get_authorize_url()
+    print("Auth URL: ", auth_url)
+    return redirect(auth_url)
+
+
+# -----------------------------------------
+
+
+def spotify_callback(request):
+    print("Callback")
+    sp_oauth = get_spotify_oauth()
+    code = request.GET.get("code")
+    print("Code:", code)
+    token_info = sp_oauth.get_access_token(code)
+    request.session["token_info"] = token_info
+    print("Token info: ", token_info)
+    return redirect("home")
+
+
+# -----------------------------------------
+
+
+def get_spotipy_client(request):
+    token_info = request.session.get("token_info", {})
+    if not token_info:
+        print("No token info")
+        return None
+
+    if time.time() > token_info["expires_at"]:
+        sp_oauth = get_spotify_oauth()
+        token_info = sp_oauth.refresh_access_token(token_info["refresh_token"])
+        print("Refresh token: ", token_info)
+        request.session["token_info"] = token_info
+
+    return Spotify(auth=token_info["access_token"])
+
+
+# -----------------------------------------
+
+# from .spotify_client import (
+#     get_spotipy_client,
+#     get_spotify_oauth,
+#     spotify_auth,
+#     spotify_callback,
+# )
+
+
+# def custom_ratelimit(*args, **kwargs):
+#     def decorator(func):
+#         @ratelimit(*args, **kwargs)
+#         def _wrapped_view(request, *args, **kwargs):
+#             if getattr(request, "limited", False):
+#                 print("Rate limit exceeded")
+#                 return HttpResponse(
+#                     "Rate limit exceeded. Please try again later.", status=429
+#                 )
+#             return func(request, *args, **kwargs)
+
+#         return _wrapped_view
+
+#     return decorator
+
+
+# @custom_ratelimit(key="user_or_ip", rate=rate)
+
 from .spotify_utils import fetch_top_tracks
-from .user_utils import user_or_ip, rate
+from .user_utils import rate
 
 
-# @ratelimit(key="user_or_ip", rate=rate, block=True)
-
-
-def custom_ratelimit(*args, **kwargs):
-    def decorator(func):
-        @ratelimit(*args, **kwargs)
-        def _wrapped_view(request, *args, **kwargs):
-            if getattr(request, "limited", False):
-                print("Rate limit exceeded")
-                return HttpResponse(
-                    "Rate limit exceeded. Please try again later.", status=429
-                )
-            return func(request, *args, **kwargs)
-
-        return _wrapped_view
-
-    return decorator
-
-
-@custom_ratelimit(key="user_or_ip", rate=rate)
+@ratelimit(key="user_or_ip", rate=rate, block=True)
 def top_tracks(request, time_range, name, context):
     sp = get_spotipy_client(request)
     if not sp:
@@ -118,7 +119,7 @@ def top_tracks(request, time_range, name, context):
         return redirect("spotify_auth")
 
     offset = int(context["offset"])
-    tracks = fetch_top_tracks(sp, time_range, limit=2, offset=offset)
+    tracks = fetch_top_tracks(sp, time_range, limit=5, offset=offset)
     print("Tracks in")
 
     return render(

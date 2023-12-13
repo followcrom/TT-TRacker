@@ -1,10 +1,6 @@
 {% extends "base.html" %}
 
-{% load static %}
-
 {% block content %}
-
-<h1>{{ name }}</h1>
 
 <div class="home-content">
     {% if user.is_authenticated %}
@@ -12,13 +8,12 @@
     <p><a href="{% url 'logout' %}">Log Out</a></p>
 
     {% else %}
-    <p>You are not logged in</p>
     <!-- <a href="{% url 'login' %}">Log In</a> -->
-    <h2>Login</h2>
-    <form method="post">
+    <h2>Please login to continue</h2>
+    <form method="post" class="form-container">
         {% csrf_token %}
         {{ form.as_p }}
-        <button type="submit" class="button">Login</button>
+        <button type="submit" class="centered-button">Login</button>
     </form>
     {% endif %}
 </div>

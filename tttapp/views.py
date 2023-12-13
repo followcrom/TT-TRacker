@@ -1,105 +1,118 @@
 # views.py
 
-"""
-Top Track Tracker is a web app built in the Django framework. It uses the Spotify API to retrieve:
-
-1. the user's top tracks across three time ranges: [short_term, medium_term, long_term]
-(user-top-read: https://developer.spotify.com/documentation/web-api/reference/get-users-top-artists-and-tracks)
-
-2. audio features for each track (Get Tracks' Audio Features: https://developer.spotify.com/documentation/web-api/reference/get-several-audio-features)
-
-It also uses the Spotify API to start playback of the user's top tracks. (Scope: user-modify-playback-state, https://developer.spotify.com/documentation/web-api/reference/start-a-users-playback)
-
-The Spotipy library is used to interact with the Spotify API.
-
-Get Track: https://developer.spotify.com/documentation/web-api/reference/get-track
-
-Top Track Tracker utilizes a SQLite database to store selected tracks. The `add_to_trending` function adds a track to the database. The `view_trending_tracks` function retrieves all tracks from the database and renders them using a template. The `delete_trending_track` function deletes a track from the database. `start_spotify_playback` uses the Spotipy library with the `user-modify-playback-state` scope to start playback of the tracks in the database.
-
-OAuth 2.0 is required for authenticating all API requests.
-"""
-
 
 from django.shortcuts import redirect, render
 from django.urls import reverse
-from django.conf import settings
+from django.contrib import messages
+
+# from django.conf import settings
 from django.contrib.auth.decorators import login_required
+from django_ratelimit.decorators import ratelimit
+
 from django.views.decorators.http import require_POST
 from django.http import JsonResponse
+from django.http import HttpResponse
 
 from .models import TrendingTracks
 
-import time
+# import time
 
-from spotipy import Spotify
-from spotipy.oauth2 import SpotifyOAuth
-
-# -----------------------------------------
-
-
-def get_spotify_oauth():
-    return SpotifyOAuth(
-        client_id=settings.SPOTIFY_CLIENT_ID,
-        client_secret=settings.SPOTIFY_CLIENT_SECRET,
-        redirect_uri=settings.SPOTIFY_REDIRECT_URI,
-        scope="user-library-read user-read-playback-state",
-    )
-
+# from spotipy import Spotify
+# from spotipy.oauth2 import SpotifyOAuth
 
 # -----------------------------------------
 
 
-def spotify_auth(request):
-    sp_oauth = get_spotify_oauth()
-    auth_url = sp_oauth.get_authorize_url()
-    print("Auth URL: ", auth_url)
-    return redirect(auth_url)
+# def get_spotify_oauth():
+#     return SpotifyOAuth(
+#         client_id=settings.SPOTIFY_CLIENT_ID,
+#         client_secret=settings.SPOTIFY_CLIENT_SECRET,
+#         redirect_uri=settings.SPOTIFY_REDIRECT_URI,
+#         scope="user-library-read user-read-playback-state",
+#     )
+
+
+# # -----------------------------------------
+
+
+# def spotify_auth(request):
+#     sp_oauth = get_spotify_oauth()
+#     auth_url = sp_oauth.get_authorize_url()
+#     print("Auth URL: ", auth_url)
+#     return redirect(auth_url)
+
+
+# # -----------------------------------------
+
+
+# def spotify_callback(request):
+#     print("Callback")
+#     sp_oauth = get_spotify_oauth()
+#     code = request.GET.get("code")
+#     print("Code: ", code)
+#     token_info = sp_oauth.get_access_token(code)
+#     request.session["token_info"] = token_info
+#     print("Token info: ", token_info)
+#     return redirect("home")
+
+
+# # -----------------------------------------
+
+
+# def get_spotipy_client(request):
+#     token_info = request.session.get("token_info", {})
+#     if not token_info:
+#         print("No token info")
+#         return None
+
+#     if time.time() > token_info["expires_at"]:
+#         sp_oauth = get_spotify_oauth()
+#         token_info = sp_oauth.refresh_access_token(token_info["refresh_token"])
+#         print("Refresh token: ", token_info)
+#         request.session["token_info"] = token_info
+
+#     return Spotify(auth=token_info["access_token"])
 
 
 # -----------------------------------------
 
-
-def spotify_callback(request):
-    print("Callback")
-    sp_oauth = get_spotify_oauth()
-    code = request.GET.get("code")
-    print("Code: ", code)
-    token_info = sp_oauth.get_access_token(code)
-    request.session["token_info"] = token_info
-    print("Token info: ", token_info)
-    return redirect("home")
-
-
-# -----------------------------------------
-
-
-def get_spotipy_client(request):
-    token_info = request.session.get("token_info", {})
-    if not token_info:
-        print("No token info")
-        return None
-
-    if time.time() > token_info["expires_at"]:
-        sp_oauth = get_spotify_oauth()
-        token_info = sp_oauth.refresh_access_token(token_info["refresh_token"])
-        print("Refresh token: ", token_info)
-        request.session["token_info"] = token_info
-
-    return Spotify(auth=token_info["access_token"])
-
-
-# -----------------------------------------
-
+from .spotify_client import (
+    get_spotipy_client,
+    get_spotify_oauth,
+    spotify_auth,
+    spotify_callback,
+)
 from .spotify_utils import fetch_top_tracks
+from .user_utils import user_or_ip, rate
 
 
-def top_tracks(request, time_range, name, offset=0):
+# @ratelimit(key="user_or_ip", rate=rate, block=True)
+
+
+def custom_ratelimit(*args, **kwargs):
+    def decorator(func):
+        @ratelimit(*args, **kwargs)
+        def _wrapped_view(request, *args, **kwargs):
+            if getattr(request, "limited", False):
+                print("Rate limit exceeded")
+                return HttpResponse(
+                    "Rate limit exceeded. Please try again later.", status=429
+                )
+            return func(request, *args, **kwargs)
+
+        return _wrapped_view
+
+    return decorator
+
+
+@custom_ratelimit(key="user_or_ip", rate=rate)
+def top_tracks(request, time_range, name, context):
     sp = get_spotipy_client(request)
     if not sp:
         return redirect("spotify_auth")
 
-    offset = int(offset)
-    tracks = fetch_top_tracks(sp, time_range, limit=4, offset=offset)
+    offset = int(context["offset"])
+    tracks = fetch_top_tracks(sp, time_range, limit=2, offset=offset)
     print("Tracks in")
 
     return render(
@@ -108,7 +121,9 @@ def top_tracks(request, time_range, name, offset=0):
         {
             "name": name,
             "tracks": tracks,
-            "next_offset": offset + 10,
+            "next_offset": context["next_offset"],
+            "back_offset": offset - 10 if offset > 0 else 0,
+            "show_back": context["show_back"],
             "time_range": time_range,
         },
     )
@@ -118,33 +133,79 @@ def top_tracks(request, time_range, name, offset=0):
 
 
 def top_tracks_short_term(request):
-    offset = request.GET.get("offset", 0)
-    return top_tracks(request, "short_term", "Top 10 Short Term", offset)
+    offset = int(request.GET.get("offset", 0))
+    limit = 10
+
+    next_offset = offset + limit
+
+    show_back = offset > 0
+
+    context = {
+        "offset": offset,
+        "next_offset": next_offset,
+        "show_back": show_back,
+    }
+
+    return top_tracks(request, "short_term", "Top 10 Short Term", context)
 
 
 # -----------------------------------------
 
 
 def top_tracks_medium_term(request):
-    offset = request.GET.get("offset", 0)
-    return top_tracks(request, "medium_term", "Top 10 Medium Term", offset)
+    offset = int(request.GET.get("offset", 0))
+    limit = 10
+
+    next_offset = offset + limit
+
+    show_back = offset > 0
+
+    context = {
+        "offset": offset,
+        "next_offset": next_offset,
+        "show_back": show_back,
+    }
+
+    return top_tracks(request, "medium_term", "Top 10 Medium Term", context)
 
 
 # -----------------------------------------
 
 
 def top_tracks_long_term(request):
-    offset = request.GET.get("offset", 0)
-    return top_tracks(request, "long_term", "Top 10 Long Term", offset)
+    offset = int(request.GET.get("offset", 0))
+    limit = 10
+
+    next_offset = offset + limit
+
+    show_back = offset > 0
+
+    context = {
+        "offset": offset,
+        "next_offset": next_offset,
+        "show_back": show_back,
+    }
+
+    return top_tracks(request, "long_term", "Top 10 Long Term", context)
 
 
 # -----------------------------------------
+from django.conf import settings
 
 
 @login_required
 def home(request):
-    name = "Welcome to Top Track Tracker"
-    return render(request, "home.html", {"name": name})
+    name = "Welcome to the Top Track Tracker"
+
+    lastfm_api_key = settings.LASTFM_API_KEY
+    lastfm_username = settings.LASTFM_USERNAME
+
+    lastfm = lastfm_play_count(lastfm_username, lastfm_api_key)
+    print("Play counts: ", len(lastfm))
+    if lastfm:  # Check if there are tracks in the list
+        print("Example track name: ", lastfm[20]["name"])
+
+    return render(request, "home.html", {"name": name, "lastfm": lastfm})
 
 
 # -----------------------------------------
@@ -168,7 +229,7 @@ def add_to_trending(request):
 
         # Check if the entry with the same URI already exists
         if TrendingTracks.objects.filter(uri=uri).exists():
-            return JsonResponse({"success": False, "message": "Already added"})
+            return JsonResponse({"success": False, "message": "\u2717 Already exists"})
         else:
             TrendingTracks.objects.create(
                 artist=artist_name,
@@ -185,7 +246,9 @@ def add_to_trending(request):
                 tempo=tempo,
                 artist_uri=artist_uri,
             )
-            return JsonResponse({"success": True, "message": "Added track"})
+            return JsonResponse(
+                {"success": True, "message": "\u2713 Added to trending"}
+            )
 
     return JsonResponse({"success": False, "message": "Invalid request."}, status=400)
 
@@ -289,6 +352,90 @@ def export_trending_tracks(request):
 
 # -----------------------------------------
 
+from io import TextIOWrapper
+
+
+from django.db import transaction
+
+
+@require_POST  # This view should only accept POST requests
+def upload_trending_tracks(request):
+    new_records = []
+    existing_uris = set()
+    # records_added = 0
+
+    # using the @require_POST decorator makes the check if request.method == "POST" redundant.
+    # if request.method == "POST" and request.FILES.get("csv_file"):
+
+    if request.FILES.get("csv_file"):
+        csv_file = request.FILES["csv_file"]
+        print(type(csv_file))
+
+        if not csv_file.name.endswith(".csv"):
+            messages.error(request, "\u2717 Error: Not a CSV file")
+            messages.add_message(request, messages.INFO, "Please try again")
+            return redirect("view_trending_tracks")
+
+        csv_file = TextIOWrapper(csv_file.file, encoding="utf-8")
+        reader = csv.reader(csv_file)
+        print(type(reader))
+
+        # Skip the header row
+        next(reader, None)
+
+        # Process the CSV data
+        for row in reader:
+            uri = row[5]
+            new_records.append(
+                TrendingTracks(
+                    uri=uri,
+                    artist=row[0],
+                    song=row[1],
+                    album=row[2],
+                    release_year=row[3],
+                    popularity=row[4],
+                    genres=row[6],
+                    energy=row[7],
+                    key=row[8],
+                    valence=row[9],
+                    mood=row[10],
+                    tempo=row[11],
+                    artist_uri=row[12],
+                )
+            )
+            existing_uris.add(uri)
+
+        # Check which records already exist
+        existing_records = TrendingTracks.objects.filter(
+            uri__in=existing_uris
+        ).values_list("uri", flat=True)
+        existing_uris = set(existing_records)
+        print(len(existing_uris))
+
+        # Exclude existing records
+        new_records_to_add = [
+            record for record in new_records if record.uri not in existing_uris
+        ]
+        records_to_add_count = len(new_records_to_add)
+
+        # Use bulk_create to add all new records at once
+        with transaction.atomic():
+            TrendingTracks.objects.bulk_create(new_records_to_add)
+            records_added = records_to_add_count
+
+        # Add success message with feedback
+        messages.success(request, f"\u2713 CSV processed: {records_added} tracks added")
+        messages.add_message(request, messages.WARNING, "Duplicates were ignored")
+
+        return redirect("view_trending_tracks")
+
+    else:
+        messages.error(request, "Error: Invalid request or no file uploaded")
+        return redirect("view_trending_tracks")
+
+
+# -----------------------------------------
+
 
 # def start_spotify_playback(request):
 #     try:
@@ -323,7 +470,9 @@ def start_spotify_playback(request):
         # Redirect to Spotify auth or handle the lack of a valid token
         return redirect("spotify_auth")
 
-    device_id = None
+    devices = sp.devices()
+    print("Devices: ", devices)
+    device_id = "23519aa963a0f6387f210264535162664dca6a1f"
 
     try:
         # Retrieve the URIs from TrendingTracks
@@ -337,7 +486,10 @@ def start_spotify_playback(request):
         position_ms = 0
 
         sp.start_playback(
-            device_id=device_id, uris=track_uris, offset=offset, position_ms=position_ms
+            device_id=device_id,
+            uris=track_uris,
+            offset=offset,
+            position_ms=position_ms,
         )
         return JsonResponse(
             {
@@ -347,3 +499,64 @@ def start_spotify_playback(request):
         )
     except Exception as e:
         return JsonResponse({"success": False, "message": str(e)})
+
+
+# -----------------------------------------
+
+import requests
+
+
+def lastfm_play_count(username, api_key):
+    lastfm_info = []
+
+    try:
+        # Define the API endpoint for getting user's top tracks
+        endpoint = f"http://ws.audioscrobbler.com/2.0/?method=user.gettoptracks&user={username}&api_key={api_key}&format=json"
+
+        # Send a GET request to the Last.fm API
+        response = requests.get(endpoint)
+
+        # Check if the request was successful
+        if response.status_code == 200:
+            data = response.json()
+            top_tracks = data["toptracks"]["track"]
+
+            # Extract the desired information for each track
+            for track in top_tracks:
+                track_info = {
+                    "name": track.get("name", ""),
+                    "artist": track.get("artist", {}).get("name", ""),
+                    "playcount": track.get("playcount", "0"),
+                }
+                lastfm_info.append(track_info)
+
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
+    return lastfm_info
+
+
+# get play counts from last.fm
+# def lastfm_play_count(username, api_key):
+#     play_count_lst = []
+
+#     try:
+#         # Define the API endpoint for getting user's top tracks
+#         endpoint = f"http://ws.audioscrobbler.com/2.0/?method=user.gettoptracks&user={username}&api_key={api_key}&format=json"
+
+#         # Send a GET request to the Last.fm API
+#         response = requests.get(endpoint)
+
+#         # Check if the request was successful
+#         if response.status_code == 200:
+#             data = response.json()
+#             top_tracks = data["toptracks"]["track"]
+
+#             if top_tracks:
+#                 for track in top_tracks:
+#                     play_count_lst.append(track["playcount"])
+
+#     except Exception as e:
+#         print(f"An error occurred: {e}")
+
+#     return play_count_lst

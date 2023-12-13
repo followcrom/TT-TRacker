@@ -4,10 +4,23 @@
 
 <h1>{{ name }}</h1>
 
+<div id="message-area"></div>
+
 <div class="topRow">
     <button id="startPlaybackButton" class="button" style="color: green;">Start Spotify Playback</button>
 
+
+    <!-- this hides the default upload form and allows me to use a css button -->
+    <form id="upload-form" method="post" action="{% url 'upload-trending-tracks' %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="file" name="csv_file" id="file-upload" class="file-upload-input"
+            onchange="document.getElementById('upload-form').submit();">
+        <label for="file-upload" class="button" style="color: #E75480;">Upload CSV</label>
+    </form>
+
+
     <a href="{% url 'export_csv' %}" class="button" style="color: #004897;">Export to CSV</a>
+
 
     <form action="{% url 'delete_all_tracks' %}" method="post">
         {% csrf_token %}
@@ -15,6 +28,7 @@
             onclick="return confirm('Are you sure you want to delete all tracks?')">Delete All
             Tracks</button>
     </form>
+
 
 </div>
 
@@ -67,6 +81,61 @@
 
 </table>
 
+
+{% if messages %}
+<!-- this is pulling in jquery from a CDN -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        var messagesList = [
+            {% for message in messages %}
+            { text: "{{ message|escapejs }}", level: "{{ message.level_tag }}" }{% if not forloop.last %}, {% endif %}
+    {% endfor %}
+        ];
+    var messageArea = $("#message-area");
+
+    messagesList.forEach(function (message, index) {
+        setTimeout(function () {
+            messageArea.text(message.text);
+            console.log("Message text:", message.text);
+            console.log("Message level:", message.level);
+            messageArea.text(message.text);
+
+            // Apply CSS based on the message level
+            switch (message.level) {
+                case 'debug':
+                    messageArea.css("color", "gray");
+                    break;
+                case 'info':
+                    messageArea.css("color", "blue");
+                    break;
+                case 'success':
+                    messageArea.css("color", "green");
+                    break;
+                case 'warning':
+                    messageArea.css("color", "orange");
+                    break;
+                case 'error':
+                    messageArea.css("color", "red");
+                    break;
+                default:
+                    messageArea.css("color", "black");
+            }
+
+            setTimeout(function () {
+                if (index === messagesList.length - 1) {
+                    messageArea.text(''); // Clear the message area after the last message
+                }
+            }, 2000);
+        }, 2000 * index);
+    });
+    });
+</script>
+{% endif %}
+
+
+
 <br><br>
 
 <!-- JavaScript code -->
@@ -88,5 +157,8 @@
             });
     });
 </script>
+
+
+
 
 {% endblock %}

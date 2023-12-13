@@ -22,9 +22,10 @@ def add_audio_features_to_tracks(sp, tracks):
     for i, track_info in enumerate(tracks):
         if audio_features[i]:
             valence, mood = valence_to_mood(audio_features[i]["valence"])
+            energy = energy_to_category(audio_features[i]["energy"])
             track_info.update(
                 {
-                    "energy": audio_features[i]["energy"],
+                    "energy": energy,
                     "key": audio_features[i]["key"],
                     "valence": valence,
                     "mood": mood,
@@ -34,6 +35,21 @@ def add_audio_features_to_tracks(sp, tracks):
 
 
 # -----------------------------------------
+
+
+def energy_to_category(energy):
+    if energy <= 0.2:
+        return "Subdued"
+    elif energy <= 0.4:
+        return "Low Energy"
+    elif energy <= 0.6:
+        return "Middling"
+    elif energy <= 0.8:
+        return "Upbeat"
+    else:
+        return "High Energy"
+
+    # -----------------------------------------
 
 
 def valence_to_mood(valence):
@@ -102,3 +118,6 @@ def extract_track_info(sp, result):
         "popularity": result["popularity"],
         "genres": " / ".join(genres),
     }
+
+
+# -----------------------------------------

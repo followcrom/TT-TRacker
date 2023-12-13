@@ -4,9 +4,16 @@
 
 <h1>{{ name }}</h1>
 
+<div id="message-area"></div>
+
 <div class="topRow">
-    <div id="message-area"></div>
-    <a href="?offset={{ next_offset }}" class="button">Load More</a>
+
+    {% if show_back %}
+    <a href="?offset={{ back_offset }}" class="button" style="color: #004897;">Back</a>
+    {% endif %}
+    <a href="?offset={{ next_offset }}" class="button" style="color: #E75480;">Load More</a>
+
+
 </div>
 
 
@@ -68,6 +75,7 @@
 
 <br><br>
 
+<!-- this is pulling in jquery from a CDN -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <script>
@@ -84,13 +92,13 @@
                     var messageArea = $("#message-area");
                     messageArea.text(response.message);
                     messageArea.css({
-                        'color': response.success ? '#004897' : 'red', // Green for success, red otherwise
+                        'color': response.success ? '#54E772' : '#E75480',
                     });
 
                     // Clear the message after 3 seconds
                     setTimeout(function () {
                         messageArea.text('');
-                    }, 3000);
+                    }, 2500);
                 },
                 error: function (xhr, status, error) {
                     // Handle error

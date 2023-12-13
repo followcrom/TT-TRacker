@@ -109,6 +109,7 @@ def custom_ratelimit(*args, **kwargs):
 def top_tracks(request, time_range, name, context):
     sp = get_spotipy_client(request)
     if not sp:
+        print("No spotipy client")
         return redirect("spotify_auth")
 
     offset = int(context["offset"])
@@ -369,7 +370,6 @@ def upload_trending_tracks(request):
 
     if request.FILES.get("csv_file"):
         csv_file = request.FILES["csv_file"]
-        print(type(csv_file))
 
         if not csv_file.name.endswith(".csv"):
             messages.error(request, "\u2717 Error: Not a CSV file")
@@ -378,7 +378,6 @@ def upload_trending_tracks(request):
 
         csv_file = TextIOWrapper(csv_file.file, encoding="utf-8")
         reader = csv.reader(csv_file)
-        print(type(reader))
 
         # Skip the header row
         next(reader, None)
@@ -410,7 +409,6 @@ def upload_trending_tracks(request):
             uri__in=existing_uris
         ).values_list("uri", flat=True)
         existing_uris = set(existing_records)
-        print(len(existing_uris))
 
         # Exclude existing records
         new_records_to_add = [
@@ -470,9 +468,10 @@ def start_spotify_playback(request):
         # Redirect to Spotify auth or handle the lack of a valid token
         return redirect("spotify_auth")
 
-    devices = sp.devices()
-    print("Devices: ", devices)
-    device_id = "23519aa963a0f6387f210264535162664dca6a1f"
+    # devices = sp.devices()
+    # print("Devices: ", devices)
+    # device_id = "23519aa963a0f6387f210264535162664dca6a1f"
+    device_id = None
 
     try:
         # Retrieve the URIs from TrendingTracks

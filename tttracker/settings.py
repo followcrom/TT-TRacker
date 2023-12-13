@@ -44,7 +44,7 @@ LASTFM_USERNAME = os.environ.get("LASTFM_USERNAME")
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 # Determine the environment context
 # DEVELOPMENT_MODE = os.environ.get("DEVELOPMENT_MODE", "True") == "True"
@@ -177,22 +177,3 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "home"
 LOGOUT_REDIRECT_URL = "login"
-
-LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "handlers": {
-        "file": {
-            "level": "ERROR",
-            "class": "logging.FileHandler",
-            "filename": "./error.log",
-        },
-    },
-    "loggers": {
-        "django": {
-            "handlers": ["file"],
-            "level": "ERROR",
-            "propagate": True,
-        },
-    },
-}

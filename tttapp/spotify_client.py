@@ -36,7 +36,7 @@ def spotify_callback(request):
     print("Code: ", code)
     token_info = sp_oauth.get_access_token(code)
     request.session["token_info"] = token_info
-    print("Token info: ", token_info)
+    print("Token info received")
     return redirect("home")
 
 
@@ -52,7 +52,7 @@ def get_spotipy_client(request):
     if time.time() > token_info["expires_at"]:
         sp_oauth = get_spotify_oauth()
         token_info = sp_oauth.refresh_access_token(token_info["refresh_token"])
-        print("Refresh token: ", token_info)
+        print("Refresh token received")
         request.session["token_info"] = token_info
 
     return Spotify(auth=token_info["access_token"])

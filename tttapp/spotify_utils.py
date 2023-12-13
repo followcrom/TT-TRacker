@@ -1,17 +1,34 @@
 # spotify_utils.py
 
+import logging
+from spotipy import SpotifyException
+
+logger = logging.getLogger(__name__)
+
 
 def fetch_top_tracks(sp, time_range, limit, offset):
     print("Fetching top tracks")
-    results = sp.current_user_top_tracks(
-        time_range=time_range, limit=limit, offset=offset
-    )
-    print("Fetched top tracks")
-    tracks = process_spotify_results(sp, results)
+    try:
+        results = sp.current_user_top_tracks(
+            time_range=time_range, limit=limit, offset=offset
+        )
 
-    add_audio_features_to_tracks(sp, tracks)
+        print("Fetched top tracks")
 
-    return tracks
+        tracks = process_spotify_results(sp, results)
+        print("Processed top tracks")
+
+        add_audio_features_to_tracks(sp, tracks)
+        print("Added audio features to top tracks")
+
+        return tracks
+
+    except SpotifyException as e:
+        # Log the status code, response headers and message
+        logger.error(f"Spotify API request failed: Status {e.http_status}")
+        logger.error(f"Response headers: {e.headers}")
+        logger.error(f"Response message: {e.msg}")
+        return None
 
 
 # -----------------------------------------

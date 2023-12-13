@@ -207,7 +207,7 @@ def home(request):
     name = "Welcome to the Top Track Tracker"
 
     current_time = time.time()
-    print("Current time: ", current_time)
+    print("Current time @ home: ", current_time)
 
     lastfm_api_key = settings.LASTFM_API_KEY
     lastfm_username = settings.LASTFM_USERNAME

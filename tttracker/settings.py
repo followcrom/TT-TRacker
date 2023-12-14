@@ -33,7 +33,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 # ENVIROMENTAL VARIABLES
-SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
+DJANGO_SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
 SPOTIFY_CLIENT_ID = os.environ.get("SPOTIFY_CLIENT_ID")
 SPOTIFY_CLIENT_SECRET = os.environ.get("SPOTIFY_CLIENT_SECRET")
 SPOTIFY_REDIRECT_URI = os.environ.get("SPOTIFY_REDIRECT_URI")

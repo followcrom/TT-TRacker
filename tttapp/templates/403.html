@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+
+<div class="home-content">
+    <h1>403 - Forbidden</h1>
+    <p>You have exceeded the rate limit.</p>
+    <p>
+        If you believe this is an error, please contact the site administrator.
+    </p>
+    <a href="{% url 'home' %}" class="button">Return to Home</a>
+</div>
+
+{% if messages %}
+{% for message in messages %}
+<h3>Messages: {{ message }} </h3>
+{% endfor %}
+{% endif %}
+{% endblock %}

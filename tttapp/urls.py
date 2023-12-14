@@ -19,6 +19,7 @@ from .views import (
 
 from .spotify_client import spotify_auth, spotify_callback
 
+
 urlpatterns = [
     path("top-tracks/short/", top_tracks_short_term, name="top_tracks_short_term"),
     path("top-tracks/medium/", top_tracks_medium_term, name="top_tracks_medium_term"),

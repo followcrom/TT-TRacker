@@ -31,27 +31,30 @@ def spotify_auth(request):
 
 def spotify_callback(request):
     try:
-        print("Callback")
+        print("Callback initiated")
         sp_oauth = get_spotify_oauth()
         print("OAuth object obtained")
 
         code = request.GET.get("code")
-        print("Code:", code)
+        print("Code obtained")
 
         if not code:
             print("No code in request")
 
         token_info = sp_oauth.get_access_token(code)
-        print("Token info before saving to session: ", token_info)
-
         request.session["token_info"] = token_info
-        saved_token_info = request.session.get("token_info", {})
-        print("Token info after saving to session: ", saved_token_info)
+        print("Token info saved to session")
+        print("Token info: ", token_info)
+
+        # Retrieve the stored URL or default to 'home' if not found
+        redirect_url = request.session.get("pre_auth_url", "home")
+        print("Redirected to: ", redirect_url)
 
     except Exception as e:
         print(f"Error in spotify_callback: {e}")
+        redirect_url = "home"
 
-    return redirect("home")
+    return redirect(redirect_url)
 
 
 # -----------------------------------------
@@ -61,15 +64,15 @@ def get_spotipy_client(request):
     token_info = request.session.get("token_info", {})
 
     # Logging token info retrieved from session
-    print("Token info in session 1: ", token_info)
+    expires_at = token_info.get("expires_at", 0)
+    print("Token expires at: ", expires_at)
 
     if not token_info:
         print("No token info")
         return None
 
     current_time = time.time()
-    expires_at = token_info.get("expires_at", 0)
-    print("Expires at: ", expires_at)
+    print("Current time: ", current_time)
 
     if current_time > expires_at:
         print("Refreshing token...")
@@ -77,14 +80,17 @@ def get_spotipy_client(request):
         token_info = sp_oauth.refresh_access_token(token_info["refresh_token"])
 
         # Logging token info after refresh
-        print("Token info refreshed.")
+        print("Token info refreshed")
 
         request.session["token_info"] = token_info
+        print("Token info saved to session")
 
-        # Verify if refreshed token_info is correctly saved in session
-        print("Token info in session 2 : ", token_info)
+        expires_at = token_info.get("expires_at", 0)
+        print("New token expires at: ", expires_at)
+
     else:
         print("Token is still valid.")
+        print("Token info: ", token_info)
 
     return Spotify(auth=token_info["access_token"])
 

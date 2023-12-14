@@ -5,7 +5,11 @@
 <div class="home-content">
     {% if user.is_authenticated %}
     Hi {{ user.username }}!
-    <p><a href="{% url 'logout' %}">Log Out</a></p>
+
+    <form action="{% url 'logout' %}" method="post">
+        {% csrf_token %}
+        <button type="submit" class="centered-button">Logout</button>
+    </form>
 
     {% else %}
     <!-- <a href="{% url 'login' %}">Log In</a> -->

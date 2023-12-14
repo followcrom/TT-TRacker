@@ -5,28 +5,31 @@
 {% block content %}
 
 <div class="home-content">
-    {% if user.is_authenticated %}
-    <h2><i class="fa-regular fa-face-smile"></i> Hi {{ user.username }}!
-        <br>{{ name }}
+
+    <h2><i class="fa-regular fa-face-smile"></i>
+        {% if user.is_authenticated %}
+        Hi {{ user.username }}!
+        <br>{{ welcome }}
+
     </h2>
-
-    <!-- <form action="{% url 'logout' %}" method="post">
-        {% csrf_token %}
-        <button type="submit" class="centered-button">Logout</button>
-    </form> -->
-
-    {% else %}
-    <h1>Please login to continue</h1>
-    <a href="{% url 'login' %}">Log In</a>
-
-    {% endif %}
-
-    <h3>Top 5 Most Played:</h3>
     <ul>
-        {% for track in lastfm|slice:":5" %}
+        {% for track in lastfm|slice:"5:15" %}
         <li><strong>{{ track.name|slice:":30" }}</strong> by {{ track.artist }} (Playcount: {{ track.playcount }})</li>
         {% endfor %}
     </ul>
+
+
+
+    {% else %}
+
+    {{ welcome }}
+
+    <h1>Please login to continue</h1>
+    <a href="{% url 'login' %}" class="button" style="color: #004897;">Log In</a>
+    {% endif %}
+
+
+
 
 
 </div>

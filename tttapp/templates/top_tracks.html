@@ -8,10 +8,10 @@
 
 <div class="topRow">
 
-    {% if show_back %}
-    <a href="?offset={{ back_offset }}" class="button" style="color: #004897;">Back</a>
-    {% endif %}
-    <a href="?offset={{ next_offset }}" class="button" style="color: #E75480;">Load More</a>
+
+    <a href="?offset={{ prev_offset }}" class="button" style="color: #004897;">- 10</a>
+
+    <a href="?offset={{ next_offset }}" class="button" style="color: #E75480;">+ 10</a>
 
 
 </div>
@@ -83,7 +83,7 @@
         // $(".trending-form").submit(function (e) {
         $(".trending-form").off('submit').on('submit', function (e) {
             e.preventDefault(); // Prevents the default form submission action
-            console.log("Form submit event triggered");
+            console.log("form event triggered");
             $.ajax({
                 type: "POST",
                 url: "{% url 'add_to_trending' %}",
@@ -99,6 +99,8 @@
                     setTimeout(function () {
                         messageArea.text('');
                     }, 2500);
+
+                    console.log("form event completed");
                 },
                 error: function (xhr, status, error) {
                     // Handle error

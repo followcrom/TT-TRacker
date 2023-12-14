@@ -15,6 +15,7 @@
         {% csrf_token %}
         <input type="file" name="csv_file" id="file-upload" class="file-upload-input"
             onchange="document.getElementById('upload-form').submit();">
+
         <label for="file-upload" class="button" style="color: #E75480;">Upload CSV</label>
     </form>
 
@@ -81,6 +82,7 @@
 
 </table>
 
+<br><br>
 
 {% if messages %}
 <!-- this is pulling in jquery from a CDN -->
@@ -136,7 +138,7 @@
 
 
 
-<br><br>
+
 
 <!-- JavaScript code -->
 <script>

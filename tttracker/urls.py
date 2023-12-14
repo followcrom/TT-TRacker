@@ -15,7 +15,11 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
+from django.conf.urls import handler403
 from django.urls import path, include
+from tttapp.user_utils import rate_limit_exceeded
+
+handler403 = rate_limit_exceeded
 
 urlpatterns = [
     path("admin/", admin.site.urls),

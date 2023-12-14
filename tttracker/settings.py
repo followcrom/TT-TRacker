@@ -54,7 +54,7 @@ DEBUG = True
 
 # Determine the environment context
 # DEVELOPMENT_MODE = os.environ.get("DEVELOPMENT_MODE", "True") == "True"
-# DEVELOPMENT_MODE = False
+# DEVELOPMENT_MODE = True
 
 # if DEVELOPMENT_MODE:
 #     SPOTIFY_REDIRECT_URI = "http://127.0.0.1:8000/callback/"
@@ -114,6 +114,9 @@ WSGI_APPLICATION = "tttracker.wsgi.application"
 # Default setting for session engine
 SESSION_ENGINE = "django.contrib.sessions.backends.db"
 
+# SESSION_COOKIE_AGE = 3600
+
+# SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases

@@ -28,57 +28,6 @@ from .models import TrendingTracks
 # from django.shortcuts import redirect
 
 
-# def get_spotify_oauth():
-#     return SpotifyOAuth(
-#         client_id=settings.SPOTIFY_CLIENT_ID,
-#         client_secret=settings.SPOTIFY_CLIENT_SECRET,
-#         redirect_uri=settings.SPOTIFY_REDIRECT_URI,
-#         scope="user-library-read user-read-playback-state",
-#     )
-
-
-# # -----------------------------------------
-
-
-# def spotify_auth(request):
-#     sp_oauth = get_spotify_oauth()
-#     auth_url = sp_oauth.get_authorize_url()
-#     print("Auth URL: ", auth_url)
-#     return redirect(auth_url)
-
-
-# # -----------------------------------------
-
-
-# def spotify_callback(request):
-#     print("Callback")
-#     sp_oauth = get_spotify_oauth()
-#     code = request.GET.get("code")
-#     print("Code:", code)
-#     token_info = sp_oauth.get_access_token(code)
-#     request.session["token_info"] = token_info
-#     print("Token info: ", token_info)
-#     return redirect("home")
-
-
-# # -----------------------------------------
-
-
-# def get_spotipy_client(request):
-#     token_info = request.session.get("token_info", {})
-#     if not token_info:
-#         print("No token info")
-#         return None
-
-#     if time.time() > token_info["expires_at"]:
-#         sp_oauth = get_spotify_oauth()
-#         token_info = sp_oauth.refresh_access_token(token_info["refresh_token"])
-#         print("Refresh token: ", token_info)
-#         request.session["token_info"] = token_info
-
-#     return Spotify(auth=token_info["access_token"])
-
-
 # -----------------------------------------
 
 from .spotify_client import (
@@ -112,15 +61,27 @@ from .user_utils import rate
 
 
 @ratelimit(key="user_or_ip", rate=rate, block=True)
-def top_tracks(request, time_range, name, context):
+def top_tracks(request, time_range, name, offset):
+    request.session["pre_auth_url"] = request.get_full_path()
+
     sp = get_spotipy_client(request)
     if not sp:
         print("No spotipy client")
         return redirect("spotify_auth")
 
-    offset = int(context["offset"])
-    tracks = fetch_top_tracks(sp, time_range, limit=5, offset=offset)
-    print("Tracks in")
+    # offset = int(offsets["offset"])
+    limit = 10
+    total_tracks = 50
+
+    if offset + limit < total_tracks:
+        tracks = fetch_top_tracks(sp, time_range, limit=limit, offset=offset)
+        next_offset = offset + limit
+        print("Less than total tracks")
+    else:
+        print("More than total tracks")
+        return redirect("trending-tracks")
+
+    prev_offset = offset - limit if offset >= limit else 0
 
     return render(
         request,
@@ -128,9 +89,8 @@ def top_tracks(request, time_range, name, context):
         {
             "name": name,
             "tracks": tracks,
-            "next_offset": context["next_offset"],
-            "back_offset": offset - 10 if offset > 0 else 0,
-            "show_back": context["show_back"],
+            "next_offset": next_offset,
+            "prev_offset": prev_offset,
             "time_range": time_range,
         },
     )
@@ -141,19 +101,8 @@ def top_tracks(request, time_range, name, context):
 
 def top_tracks_short_term(request):
     offset = int(request.GET.get("offset", 0))
-    limit = 10
 
-    next_offset = offset + limit
-
-    show_back = offset > 0
-
-    context = {
-        "offset": offset,
-        "next_offset": next_offset,
-        "show_back": show_back,
-    }
-
-    return top_tracks(request, "short_term", "Top 10 Short Term", context)
+    return top_tracks(request, "short_term", "Top 10 Short Term", offset)
 
 
 # -----------------------------------------
@@ -161,19 +110,8 @@ def top_tracks_short_term(request):
 
 def top_tracks_medium_term(request):
     offset = int(request.GET.get("offset", 0))
-    limit = 10
 
-    next_offset = offset + limit
-
-    show_back = offset > 0
-
-    context = {
-        "offset": offset,
-        "next_offset": next_offset,
-        "show_back": show_back,
-    }
-
-    return top_tracks(request, "medium_term", "Top 10 Medium Term", context)
+    return top_tracks(request, "medium_term", "Top 10 Medium Term", offset)
 
 
 # -----------------------------------------
@@ -181,19 +119,8 @@ def top_tracks_medium_term(request):
 
 def top_tracks_long_term(request):
     offset = int(request.GET.get("offset", 0))
-    limit = 10
 
-    next_offset = offset + limit
-
-    show_back = offset > 0
-
-    context = {
-        "offset": offset,
-        "next_offset": next_offset,
-        "show_back": show_back,
-    }
-
-    return top_tracks(request, "long_term", "Top 10 Long Term", context)
+    return top_tracks(request, "long_term", "Top 10 Long Term", offset)
 
 
 # -----------------------------------------
@@ -202,22 +129,17 @@ from django.conf import settings
 import time
 
 
-@login_required
+# @login_required
 def home(request):
-    name = "Welcome to the Top Track Tracker"
-
-    current_time = time.time()
-    print("Current time @ home: ", current_time)
+    welcome = "Welcome to the Top Track Tracker"
 
     lastfm_api_key = settings.LASTFM_API_KEY
     lastfm_username = settings.LASTFM_USERNAME
 
     lastfm = lastfm_play_count(lastfm_username, lastfm_api_key)
-    print("Play counts: ", len(lastfm))
-    if lastfm:  # Check if there are tracks in the list
-        print("Example track name: ", lastfm[20]["name"])
+    print("Last FM tracks: ", len(lastfm))
 
-    return render(request, "home.html", {"name": name, "lastfm": lastfm})
+    return render(request, "home.html", {"welcome": welcome, "lastfm": lastfm})
 
 
 # -----------------------------------------
@@ -283,7 +205,7 @@ def view_trending_tracks(request):
 # -----------------------------------------
 
 
-@require_POST  # This view should only accept POST requests
+@require_POST
 def delete_trending_track(request, track_id):
     try:
         track = TrendingTracks.objects.get(id=track_id)
@@ -298,28 +220,26 @@ def delete_trending_track(request, track_id):
 from django.urls import reverse
 
 
-@require_POST  # This view should only accept POST requests
+@require_POST
 def delete_all_trending_tracks(request):
-    # Delete all tracks
     TrendingTracks.objects.all().delete()
 
-    return redirect(reverse("view_trending_tracks"))
+    return redirect("view_trending_tracks")
 
 
 # -----------------------------------------
 import csv
 from django.http import HttpResponse
 from datetime import datetime
+import io
 
 
 def export_trending_tracks(request):
-    # Create the HttpResponse object with the appropriate CSV header.
-    response = HttpResponse(content_type="text/csv")
-    response[
-        "Content-Disposition"
-    ] = f'attachment; filename="trending_tracks_{datetime.now().strftime("%Y-%m-%d")}.csv"'
+    # Create a buffer to hold CSV data
+    buffer = io.StringIO()
+    print(type(buffer))
 
-    writer = csv.writer(response)
+    writer = csv.writer(buffer)
     # Write the headers to the CSV file.
     writer.writerow(
         [
@@ -339,7 +259,6 @@ def export_trending_tracks(request):
         ]
     )
 
-    # Fetch the TrendingTracks data and write to the CSV
     for track in TrendingTracks.objects.all():
         writer.writerow(
             [
@@ -359,25 +278,32 @@ def export_trending_tracks(request):
             ]
         )
 
+    # Prepare the response
+    response = HttpResponse(
+        buffer.getvalue().encode("utf-8"),  # Encode as UTF-8
+        content_type="text/csv; charset=utf-8",
+    )
+    response[
+        "Content-Disposition"
+    ] = f'attachment; filename="trending_tracks_{datetime.now().strftime("%Y-%m-%d")}.csv"'
+
+    buffer.close()
     return response
 
 
 # -----------------------------------------
 
 from io import TextIOWrapper
-
-
 from django.db import transaction
 
 
-@require_POST  # This view should only accept POST requests
+# using the @require_POST decorator makes the check
+# if request.method == "POST" redundant, e.g:
+# if request.method == "POST" and request.FILES.get("csv_file")
+@require_POST
 def upload_trending_tracks(request):
-    new_records = []
-    existing_uris = set()
-    # records_added = 0
-
-    # using the @require_POST decorator makes the check if request.method == "POST" redundant.
-    # if request.method == "POST" and request.FILES.get("csv_file"):
+    uploads = []
+    existing_uris = set(TrendingTracks.objects.values_list("uri", flat=True))
 
     if request.FILES.get("csv_file"):
         csv_file = request.FILES["csv_file"]
@@ -393,90 +319,122 @@ def upload_trending_tracks(request):
         # Skip the header row
         next(reader, None)
 
-        # Process the CSV data
         for row in reader:
             uri = row[5]
-            new_records.append(
-                TrendingTracks(
-                    uri=uri,
-                    artist=row[0],
-                    song=row[1],
-                    album=row[2],
-                    release_year=row[3],
-                    popularity=row[4],
-                    genres=row[6],
-                    energy=row[7],
-                    key=row[8],
-                    valence=row[9],
-                    mood=row[10],
-                    tempo=row[11],
-                    artist_uri=row[12],
+
+            # Check if the URI is not already in the database
+            if uri not in existing_uris:
+                uploads.append(
+                    TrendingTracks(
+                        artist=row[0],
+                        song=row[1],
+                        album=row[2],
+                        release_year=row[3],
+                        popularity=row[4],
+                        uri=uri,
+                        genres=row[6],
+                        energy=row[7],
+                        key=row[8],
+                        valence=row[9],
+                        mood=row[10],
+                        tempo=row[11],
+                        artist_uri=row[12],
+                    )
                 )
-            )
-            existing_uris.add(uri)
 
-        # Check which records already exist
-        existing_records = TrendingTracks.objects.filter(
-            uri__in=existing_uris
-        ).values_list("uri", flat=True)
-        existing_uris = set(existing_records)
-
-        # Exclude existing records
-        new_records_to_add = [
-            record for record in new_records if record.uri not in existing_uris
-        ]
-        records_to_add_count = len(new_records_to_add)
-
-        # Use bulk_create to add all new records at once
         with transaction.atomic():
-            TrendingTracks.objects.bulk_create(new_records_to_add)
-            records_added = records_to_add_count
+            TrendingTracks.objects.bulk_create(uploads)
 
-        # Add success message with feedback
-        messages.success(request, f"\u2713 CSV processed: {records_added} tracks added")
+        num_uploads = len(uploads)
+        messages.success(request, f"\u2713 CSV processed: {num_uploads} tracks added")
         messages.add_message(request, messages.WARNING, "Duplicates were ignored")
-
-        return redirect("view_trending_tracks")
 
     else:
         messages.error(request, "Error: Invalid request or no file uploaded")
-        return redirect("view_trending_tracks")
+
+    return redirect("view_trending_tracks")
+
+
+# -----------------------------------------
+
+# @require_POST  # This view should only accept POST requests
+# def upload_trending_tracks(request):
+#     new_records = []
+#     existing_uris = set()
+#     # records_added = 0
+
+#     # using the @require_POST decorator makes the check if request.method == "POST" redundant.
+#     # if request.method == "POST" and request.FILES.get("csv_file"):
+
+#     if request.FILES.get("csv_file"):
+#         csv_file = request.FILES["csv_file"]
+
+#         if not csv_file.name.endswith(".csv"):
+#             messages.error(request, "\u2717 Error: Not a CSV file")
+#             messages.add_message(request, messages.INFO, "Please try again")
+#             return redirect("view_trending_tracks")
+
+#         csv_file = TextIOWrapper(csv_file.file, encoding="utf-8")
+#         reader = csv.reader(csv_file)
+
+#         # Skip the header row
+#         next(reader, None)
+
+#         for row in reader:
+#             uri = row[5]
+#             new_records.append(
+#                 TrendingTracks(
+#                     uri=uri,
+#                     artist=row[0],
+#                     song=row[1],
+#                     album=row[2],
+#                     release_year=row[3],
+#                     popularity=row[4],
+#                     genres=row[6],
+#                     energy=row[7],
+#                     key=row[8],
+#                     valence=row[9],
+#                     mood=row[10],
+#                     tempo=row[11],
+#                     artist_uri=row[12],
+#                 )
+#             )
+#             existing_uris.add(uri)
+
+#         # Check which records already exist
+#         existing_records = TrendingTracks.objects.filter(
+#             uri__in=existing_uris
+#         ).values_list("uri", flat=True)
+#         existing_uris = set(existing_records)
+
+#         # Exclude existing records
+#         new_records_to_add = [
+#             record for record in new_records if record.uri not in existing_uris
+#         ]
+#         records_to_add_count = len(new_records_to_add)
+
+#         # Use bulk_create to add all new records at once
+#         with transaction.atomic():
+#             TrendingTracks.objects.bulk_create(new_records_to_add)
+#             records_added = records_to_add_count
+
+#         # Add success message with feedback
+#         messages.success(request, f"\u2713 CSV processed: {records_added} tracks added")
+#         messages.add_message(request, messages.WARNING, "Duplicates were ignored")
+
+#         return redirect("view_trending_tracks")
+
+#     else:
+#         messages.error(request, "Error: Invalid request or no file uploaded")
+#         return redirect("view_trending_tracks")
 
 
 # -----------------------------------------
 
 
-# def start_spotify_playback(request):
-#     try:
-#         # Get a list of available devices
-#         devices = sp.devices()
-#         device_list = devices["devices"]
-#         device_id = device_list[0]["id"] if device_list else None
-
-#         if device_id:
-#             # Retrieve the URIs from TrendingTracks
-#             trending_tracks = TrendingTracks.objects.all()
-#             track_uris = [track.uri for track in trending_tracks]
-
-#             # Reverse the order of track_uris
-#             track_uris.reverse()
-
-#             sp.start_playback(device_id=device_id, uris=track_uris)
-#             return JsonResponse(
-#                 {"success": True, "message": "Spotify playback started successfully."}
-#             )
-#         else:
-#             return JsonResponse(
-#                 {"success": False, "message": "No available devices found."}
-#             )
-#     except Exception as e:
-#         return JsonResponse({"success": False, "message": str(e)})
-
-
 def start_spotify_playback(request):
     sp = get_spotipy_client(request)
     if not sp:
-        # Redirect to Spotify auth or handle the lack of a valid token
         return redirect("spotify_auth")
 
     # devices = sp.devices()

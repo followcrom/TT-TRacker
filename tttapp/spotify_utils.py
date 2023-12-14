@@ -16,10 +16,10 @@ def fetch_top_tracks(sp, time_range, limit, offset):
         print("Fetched top tracks")
 
         tracks = process_spotify_results(sp, results)
-        print("Processed top tracks")
+        print("Processed results")
 
         add_audio_features_to_tracks(sp, tracks)
-        print("Added audio features to top tracks")
+        print("Added audio features")
 
         return tracks
 
@@ -35,6 +35,7 @@ def fetch_top_tracks(sp, time_range, limit, offset):
 
 
 def add_audio_features_to_tracks(sp, tracks):
+    print("Adding audio features")
     audio_features = sp.audio_features([track["uri"] for track in tracks])
     for i, track_info in enumerate(tracks):
         if audio_features[i]:
@@ -102,13 +103,11 @@ def process_spotify_results(sp, results):
     print("Processing results")
     list_of_results = results["items"]
     tracks = []
-    print("Processing each result")
 
     for result in list_of_results:
         track_info = extract_track_info(sp, result)
         tracks.append(track_info)
 
-    print("Processed results")
     return tracks
 
 

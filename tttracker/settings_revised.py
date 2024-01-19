@@ -32,12 +32,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # BASE_DIR: /home/bitnami/djangoapp
 
 
-dotenv_path = BASE_DIR / "tttracker" / ".env"
-# /home/bitnami/djangoapp/tttracker/.env
-load_dotenv(dotenv_path=dotenv_path)
-print("Path to .env:", dotenv_path)
+# dotenv_path = BASE_DIR / "tttracker" / ".env"
+# # /home/bitnami/djangoapp/tttracker/.env
+# load_dotenv(dotenv_path=dotenv_path)
+# print("dotenv_path", dotenv_path)
 
-# load_dotenv()
+load_dotenv()
 
 
 # from django.core.management.utils import get_random_secret_key
@@ -45,15 +45,20 @@ print("Path to .env:", dotenv_path)
 
 
 # ENVIROMENTAL VARIABLES
+# SECRET_KEY = os.environ.get(
+#     "SECRET_KEY", "hpkb(n3gnx6sq%h=!qab(^@hj6$ztm*sju5xm*3z#nn=#4+g)5"
+# )
 SECRET_KEY = os.environ.get("SECRET_KEY")
 if SECRET_KEY:
-    print("Secret key loaded successfully.")
+    print("Secret key loaded successfully.\n", SECRET_KEY)
 else:
     print("SECRET_KEY is not set!")
 
 SPOTIFY_CLIENT_ID = os.environ.get("SPOTIFY_CLIENT_ID")
 SPOTIFY_CLIENT_SECRET = os.environ.get("SPOTIFY_CLIENT_SECRET")
-SPOTIFY_REDIRECT_URI = "https://tttapp.followcrom.online/callback/"
+# SPOTIFY_REDIRECT_URI = "https://tttapp.followcrom.online/callback/"
+SPOTIFY_REDIRECT_URI = "http://127.0.0.1:8000/callback/"
+# SPOTIFY_REDIRECT_URI = os.environ.get("SPOTIFY_REDIRECT_URI")
 
 AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
@@ -67,15 +72,17 @@ LASTFM_USERNAME = os.environ.get("LASTFM_USERNAME")
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 # Determine the environment context
+# DEVELOPMENT_MODE = os.environ.get("DEVELOPMENT_MODE", "True") == "True"
 # DEVELOPMENT_MODE = False
 
 # if DEVELOPMENT_MODE:
 #     SPOTIFY_REDIRECT_URI = "http://127.0.0.1:8000/callback/"
 # else:
-#     SPOTIFY_REDIRECT_URI = "https://tttapp.followcrom.online/callback/"
+#     SPOTIFY_REDIRECT_URI = "http://18.171.147.94/callback/"
+#     # SPOTIFY_REDIRECT_URI = "https://toptracktracker.onrender.com/callback/"
 
 ALLOWED_HOSTS = [
     "localhost",
@@ -87,6 +94,8 @@ ALLOWED_HOSTS = [
 ]
 
 # ALLOWED_HOSTS = ["*"]
+
+# Application definition
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -146,6 +155,7 @@ DATABASES = {
         "NAME": BASE_DIR / "db.sqlite3",
     }
 }
+print("DATABASES", DATABASES)
 
 
 # For Render

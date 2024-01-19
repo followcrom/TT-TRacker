@@ -1,7 +1,5 @@
 {% extends "base.html" %}
 
-<!-- {% load static %} -->
-
 {% block content %}
 
 <div class="home-content">
@@ -13,8 +11,9 @@
 
     </h2>
     <ul>
-        {% for track in lastfm|slice:"5:15" %}
+        {% for track in lastfm|slice:":40" %} <!-- 40 is the number of tracks to display -->
         <li><strong>{{ track.name|slice:":30" }}</strong> by {{ track.artist }} (Playcount: {{ track.playcount }})</li>
+        <!-- 30 is the number of characters to display -->
         {% endfor %}
     </ul>
 

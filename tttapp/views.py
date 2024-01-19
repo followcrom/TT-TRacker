@@ -1,6 +1,5 @@
 # views.py
 
-
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.contrib import messages
@@ -15,19 +14,6 @@ from django.http import HttpResponse
 
 from .models import TrendingTracks
 
-# import time
-
-# from spotipy import Spotify
-# from spotipy.oauth2 import SpotifyOAuth
-
-# -----------------------------------------
-# from spotipy import Spotify
-# from spotipy.oauth2 import SpotifyOAuth
-# import time
-# from django.conf import settings
-# from django.shortcuts import redirect
-
-
 # -----------------------------------------
 
 from .spotify_client import (
@@ -37,31 +23,12 @@ from .spotify_client import (
     spotify_callback,
 )
 
-
-# def custom_ratelimit(*args, **kwargs):
-#     def decorator(func):
-#         @ratelimit(*args, **kwargs)
-#         def _wrapped_view(request, *args, **kwargs):
-#             if getattr(request, "limited", False):
-#                 print("Rate limit exceeded")
-#                 return HttpResponse(
-#                     "Rate limit exceeded. Please try again later.", status=429
-#                 )
-#             return func(request, *args, **kwargs)
-
-#         return _wrapped_view
-
-#     return decorator
-
-
-# @custom_ratelimit(key="user_or_ip", rate=rate)
-
 from .spotify_utils import fetch_top_tracks
 from .user_utils import rate
 
 
 @ratelimit(key="user_or_ip", rate=rate, block=True)
-def top_tracks(request, time_range, name, offset):
+def top_tracks(request, time_range, name, context):
     request.session["pre_auth_url"] = request.get_full_path()
 
     sp = get_spotipy_client(request)
@@ -69,28 +36,33 @@ def top_tracks(request, time_range, name, offset):
         print("No spotipy client")
         return redirect("spotify_auth")
 
-    # offset = int(offsets["offset"])
+    offset = int(context["offset"])
     limit = 10
     total_tracks = 50
+    show_forward = True
 
-    if offset + limit < total_tracks:
+    if offset + limit <= total_tracks:
         tracks = fetch_top_tracks(sp, time_range, limit=limit, offset=offset)
-        next_offset = offset + limit
-        print("Less than total tracks")
-    else:
-        print("More than total tracks")
-        return redirect("trending-tracks")
+        print("Tracks in")
 
-    prev_offset = offset - limit if offset >= limit else 0
+        # Set show_forward to False if offset is 40 (or more)
+        if offset >= 40:
+            show_forward = False
+    else:
+        print("Offset out of range")
+        tracks = []
+        show_forward = False
 
     return render(
         request,
         "top_tracks.html",
         {
             "name": name,
-            "tracks": tracks,
-            "next_offset": next_offset,
-            "prev_offset": prev_offset,
+            "tracks": tracks if tracks else [],
+            "next_offset": context["next_offset"],
+            "back_offset": offset - 10 if offset > 0 else 0,
+            "show_back": context["show_back"],
+            "show_forward": show_forward,
             "time_range": time_range,
         },
     )
@@ -101,8 +73,19 @@ def top_tracks(request, time_range, name, offset):
 
 def top_tracks_short_term(request):
     offset = int(request.GET.get("offset", 0))
+    limit = 10
 
-    return top_tracks(request, "short_term", "Top 10 Short Term", offset)
+    next_offset = offset + limit
+
+    show_back = offset > 0
+
+    context = {
+        "offset": offset,
+        "next_offset": next_offset,
+        "show_back": show_back,
+    }
+
+    return top_tracks(request, "short_term", "Top 10 Short Term", context)
 
 
 # -----------------------------------------
@@ -110,8 +93,19 @@ def top_tracks_short_term(request):
 
 def top_tracks_medium_term(request):
     offset = int(request.GET.get("offset", 0))
+    limit = 10
 
-    return top_tracks(request, "medium_term", "Top 10 Medium Term", offset)
+    next_offset = offset + limit
+
+    show_back = offset > 0
+
+    context = {
+        "offset": offset,
+        "next_offset": next_offset,
+        "show_back": show_back,
+    }
+
+    return top_tracks(request, "medium_term", "Top 10 Medium Term", context)
 
 
 # -----------------------------------------
@@ -119,8 +113,19 @@ def top_tracks_medium_term(request):
 
 def top_tracks_long_term(request):
     offset = int(request.GET.get("offset", 0))
+    limit = 10
 
-    return top_tracks(request, "long_term", "Top 10 Long Term", offset)
+    next_offset = offset + limit
+
+    show_back = offset > 0
+
+    context = {
+        "offset": offset,
+        "next_offset": next_offset,
+        "show_back": show_back,
+    }
+
+    return top_tracks(request, "long_term", "Top 10 Long Term", context)
 
 
 # -----------------------------------------
@@ -129,7 +134,7 @@ from django.conf import settings
 import time
 
 
-# @login_required
+@login_required
 def home(request):
     welcome = "Welcome to the Top Track Tracker"
 
@@ -137,7 +142,7 @@ def home(request):
     lastfm_username = settings.LASTFM_USERNAME
 
     lastfm = lastfm_play_count(lastfm_username, lastfm_api_key)
-    print("Last FM tracks: ", len(lastfm))
+    print("Last FM connection successful")
 
     return render(request, "home.html", {"welcome": welcome, "lastfm": lastfm})
 
@@ -192,7 +197,6 @@ def add_to_trending(request):
 
 def view_trending_tracks(request):
     trending_tracks = TrendingTracks.objects.all().order_by("-id")
-    # trending_tracks = TrendingTracks.objects.all()
 
     name = "Trending Tracks"
     return render(
@@ -280,7 +284,7 @@ def export_trending_tracks(request):
 
     # Prepare the response
     response = HttpResponse(
-        buffer.getvalue().encode("utf-8"),  # Encode as UTF-8
+        buffer.getvalue().encode("utf-8"),
         content_type="text/csv; charset=utf-8",
     )
     response[
@@ -357,80 +361,6 @@ def upload_trending_tracks(request):
 
 # -----------------------------------------
 
-# @require_POST  # This view should only accept POST requests
-# def upload_trending_tracks(request):
-#     new_records = []
-#     existing_uris = set()
-#     # records_added = 0
-
-#     # using the @require_POST decorator makes the check if request.method == "POST" redundant.
-#     # if request.method == "POST" and request.FILES.get("csv_file"):
-
-#     if request.FILES.get("csv_file"):
-#         csv_file = request.FILES["csv_file"]
-
-#         if not csv_file.name.endswith(".csv"):
-#             messages.error(request, "\u2717 Error: Not a CSV file")
-#             messages.add_message(request, messages.INFO, "Please try again")
-#             return redirect("view_trending_tracks")
-
-#         csv_file = TextIOWrapper(csv_file.file, encoding="utf-8")
-#         reader = csv.reader(csv_file)
-
-#         # Skip the header row
-#         next(reader, None)
-
-#         for row in reader:
-#             uri = row[5]
-#             new_records.append(
-#                 TrendingTracks(
-#                     uri=uri,
-#                     artist=row[0],
-#                     song=row[1],
-#                     album=row[2],
-#                     release_year=row[3],
-#                     popularity=row[4],
-#                     genres=row[6],
-#                     energy=row[7],
-#                     key=row[8],
-#                     valence=row[9],
-#                     mood=row[10],
-#                     tempo=row[11],
-#                     artist_uri=row[12],
-#                 )
-#             )
-#             existing_uris.add(uri)
-
-#         # Check which records already exist
-#         existing_records = TrendingTracks.objects.filter(
-#             uri__in=existing_uris
-#         ).values_list("uri", flat=True)
-#         existing_uris = set(existing_records)
-
-#         # Exclude existing records
-#         new_records_to_add = [
-#             record for record in new_records if record.uri not in existing_uris
-#         ]
-#         records_to_add_count = len(new_records_to_add)
-
-#         # Use bulk_create to add all new records at once
-#         with transaction.atomic():
-#             TrendingTracks.objects.bulk_create(new_records_to_add)
-#             records_added = records_to_add_count
-
-#         # Add success message with feedback
-#         messages.success(request, f"\u2713 CSV processed: {records_added} tracks added")
-#         messages.add_message(request, messages.WARNING, "Duplicates were ignored")
-
-#         return redirect("view_trending_tracks")
-
-#     else:
-#         messages.error(request, "Error: Invalid request or no file uploaded")
-#         return redirect("view_trending_tracks")
-
-
-# -----------------------------------------
-
 
 def start_spotify_playback(request):
     sp = get_spotipy_client(request)
@@ -502,29 +432,3 @@ def lastfm_play_count(username, api_key):
         print(f"An error occurred: {e}")
 
     return lastfm_info
-
-
-# get play counts from last.fm
-# def lastfm_play_count(username, api_key):
-#     play_count_lst = []
-
-#     try:
-#         # Define the API endpoint for getting user's top tracks
-#         endpoint = f"http://ws.audioscrobbler.com/2.0/?method=user.gettoptracks&user={username}&api_key={api_key}&format=json"
-
-#         # Send a GET request to the Last.fm API
-#         response = requests.get(endpoint)
-
-#         # Check if the request was successful
-#         if response.status_code == 200:
-#             data = response.json()
-#             top_tracks = data["toptracks"]["track"]
-
-#             if top_tracks:
-#                 for track in top_tracks:
-#                     play_count_lst.append(track["playcount"])
-
-#     except Exception as e:
-#         print(f"An error occurred: {e}")
-
-#     return play_count_lst

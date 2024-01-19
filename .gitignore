@@ -6,6 +6,7 @@ __pycache__
 db.sqlite3
 media
 static
+lastfm.py
 
 # Backup files # 
 *.bak 
@@ -137,3 +138,8 @@ GitHub.sublime-settings
 !.vscode/launch.json 
 !.vscode/extensions.json 
 .history
+
+
+# SSH private keys #
+LightsailDefaultKey-eu-west-2.pem
+lightsail.ppk

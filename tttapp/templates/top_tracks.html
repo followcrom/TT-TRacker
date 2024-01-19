@@ -9,10 +9,13 @@
 <div class="topRow">
 
 
-    <a href="?offset={{ prev_offset }}" class="button" style="color: #004897;">- 10</a>
+    {% if show_back %}
+    <a href="?offset={{ back_offset }}" class="button" style="color: #FD7E14;">- 10</a>
+    {% endif %}
 
-    <a href="?offset={{ next_offset }}" class="button" style="color: #E75480;">+ 10</a>
-
+    {% if show_forward %}
+    <a href="?offset={{ next_offset }}" class="button" style="color: #2fff9b;">+ 10</a>
+    {% endif %}
 
 </div>
 
@@ -95,7 +98,7 @@
                         'color': response.success ? '#54E772' : '#E75480',
                     });
 
-                    // Clear the message after 3 seconds
+                    // Clear the message after 2.5 seconds
                     setTimeout(function () {
                         messageArea.text('');
                     }, 2500);
@@ -106,7 +109,7 @@
                     // Handle error
                     var messageArea = $("#message-area");
                     messageArea.text("An error occurred: " + error);
-                    messageArea.css('color', 'red'); // Display error message in red
+                    messageArea.css('color', 'red'); // Display message in red
                 }
             });
         });

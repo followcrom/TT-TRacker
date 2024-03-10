@@ -28,7 +28,7 @@ LASTFM_USERNAME = os.environ.get("LASTFM_USERNAME")
 
 
 # Turn off for production
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = [
     "localhost",

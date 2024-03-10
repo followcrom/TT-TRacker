@@ -12,11 +12,15 @@ $ source /.venv/bin/activate
 
 ## Start the Dev server (default port 8000)
 
-`python manage.py runserver`
+```python
+python manage.py runserver
+```
 
 If you need to run the server on a different port, you can specify it as follows:
 
-`python manage.py runserver 8080`
+```python
+python manage.py runserver 8080
+```
 
 ## Log into the app:
 

@@ -3,27 +3,9 @@ from django.db import models
 
 class TrendingTracks(models.Model):
     """
-    TrendingTracks is a Django model.
 
-    This model stores information about tracks that users mark as 'trending' in the application.
-    It is used to keep a record of popular or frequently played tracks based on user interaction.
+    This model stores information about tracks that are marked as 'Trending'.
 
-    Attributes:
-        artist
-        song
-        album
-        release_year
-        popularity
-        uri
-        genres
-        energy
-        key
-        valence
-        mood
-        tempo
-        artist_uri
-
-    The 'uri' field is particularly important as it provides a unique identifier for each track, enabling easy reference to the specific track on Spotify.
     """
 
     artist = models.CharField(max_length=200)

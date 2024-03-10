@@ -1,33 +1,26 @@
 # spotify_utils.py
 
-import logging
 from spotipy import SpotifyException
-
+import logging
 logger = logging.getLogger(__name__)
 
 
 def fetch_top_tracks(sp, time_range, limit, offset):
-    print("Fetching top tracks")
+    print("Fetching tracks...")
     try:
         results = sp.current_user_top_tracks(
             time_range=time_range, limit=limit, offset=offset
         )
 
-        print("Fetched top tracks")
-
         tracks = process_spotify_results(sp, results)
-        print("Processed results")
 
         add_audio_features_to_tracks(sp, tracks)
-        print("Added audio features")
 
         return tracks
 
     except SpotifyException as e:
-        # Log the status code, response headers and message
         logger.error(f"Spotify API request failed: Status {e.http_status}")
-        logger.error(f"Response headers: {e.headers}")
-        logger.error(f"Response message: {e.msg}")
+        logger.error(f"\nResponse headers: {e.headers}")
         return None
 
 
@@ -35,7 +28,7 @@ def fetch_top_tracks(sp, time_range, limit, offset):
 
 
 def add_audio_features_to_tracks(sp, tracks):
-    print("Adding audio features")
+    print("Adding audio features...")
     audio_features = sp.audio_features([track["uri"] for track in tracks])
     for i, track_info in enumerate(tracks):
         if audio_features[i]:
@@ -87,7 +80,6 @@ def valence_to_mood(valence):
 
 
 def get_artist_genres(sp, artist_id):
-    # Fetch artist details
     artist_info = sp.artist(artist_id)
 
     # Get genres and convert each genre to title case
@@ -100,7 +92,7 @@ def get_artist_genres(sp, artist_id):
 
 
 def process_spotify_results(sp, results):
-    print("Processing results")
+    print("Processing results...")
     list_of_results = results["items"]
     tracks = []
 

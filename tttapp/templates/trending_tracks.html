@@ -7,7 +7,7 @@
 <div id="message-area"></div>
 
 <div class="topRow">
-    <button id="startPlaybackButton" class="button" style="color: green;">Start Spotify Playback</button>
+    <button id="startPlaybackButton" class="button" style="color: greenyellow;">Start Spotify Playback</button>
 
 
     <!-- this hides the default upload form and allows me to use a css button -->
@@ -16,11 +16,11 @@
         <input type="file" name="csv_file" id="file-upload" class="file-upload-input"
             onchange="document.getElementById('upload-form').submit();">
 
-        <label for="file-upload" class="button" style="color: #E75480;">Upload CSV</label>
+        <label for="file-upload" class="button" style="color: orange;">Upload CSV</label>
     </form>
 
 
-    <a href="{% url 'export_csv' %}" class="button" style="color: #004897;">Export to CSV</a>
+    <a href="{% url 'export_csv' %}" class="button" style="color: #FFF;">Export to CSV</a>
 
 
     <form action="{% url 'delete_all_tracks' %}" method="post">

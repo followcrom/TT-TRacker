@@ -1,4 +1,4 @@
-# Top Track Tracker
+# followCrom's Top Track Tracker
 
 ![Alt Text](readme_img.png)
 
@@ -10,17 +10,13 @@ $ source /.venv/bin/activate
 
 (pip install -r requirements.txt)
 
-## Start the Development Server (default port 8000)
+## Start the Dev server (default port 8000)
 
 `python manage.py runserver`
 
 If you need to run the server on a different port, you can specify it as follows:
 
 `python manage.py runserver 8080`
-
-## Stop the Server
-
-`Ctrl+C`
 
 ## Log into the app:
 
@@ -38,7 +34,7 @@ ssh -i ~/.ssh/ttt-lightsail.pem bitnami@18.171.147.94
 
 ## Access the DB:
 
-All saved records are stored in the TrendingTracks model. List, add and remove tracks via the console in the U.I.
+All saved records are stored in the TrendingTracks model. View, add and remove tracks via the console in the U.I.
 
 For full database entry details:
 

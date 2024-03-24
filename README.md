@@ -6,6 +6,8 @@
 
 ```bash
 $ source /.venv/bin/activate
+
+source venv/bin/activate
 ```
 
 (pip install -r requirements.txt)
@@ -15,12 +17,24 @@ $ source /.venv/bin/activate
 ```python
 python manage.py runserver
 ```
+This starts Django's built-in development server.
 
 If you need to run the server on a different port, you can specify it as follows:
 
 ```python
 python manage.py runserver 8080
 ```
+
+## Run dev server on the AWS instance
+
+```bash
+python manage.py runserver 0.0.0.0:8000
+```
+
+
+0.0.0.0 tells the development server to listen on all public IP addresses that the VM has. This makes the server accessible from outside the VM.
+8000 specifies the port number on which the server will listen for requests.
+Open your web browser and go to http://VM-Public-IP:8000
 
 ## Log into the app:
 
@@ -95,3 +109,51 @@ curl --request GET \
   --url 'https://api.spotify.com/v1/me/top/tracks?time_range=short_term&offset=0' \
   --header 'Authorization: Bearer xxx'
 ```
+<br>
+
+# Apache
+
+## Config test:
+
+`sudo apachectl configtest`
+
+## Status:
+`sudo /opt/bitnami/ctlscript.sh status apache`
+
+## Restart Apache:
+`sudo /opt/bitnami/ctlscript.sh restart apache`
+
+# Logs
+
+### Access Logs:
+`sudo cat /opt/bitnami/apache2/logs/access_log`
+
+### Error Logs:
+```bash
+sudo tail -n 20 /opt/bitnami/apache2/logs/error_log
+```
+
+or all:
+
+`sudo cat /opt/bitnami/apache2/logs/error_log`
+
+### Django files:
+`head -n 20 settings.py`
+
+# Fresh VM
+
+### Connect to LightSail instance
+
+```bash
+ssh -i ~/.ssh/toptt-aws.pem bitnami@13.40.128.58
+```
+
+### cat top 100 lines of the error log
+
+```bash
+sudo tail -n 20 /opt/bitnami/apache2/logs/error_log
+```
+
+# FileZilla:
+
+**.pem keys** are in Edit -> Settings -> SFTP -> Add Key File

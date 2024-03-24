@@ -27,8 +27,8 @@ def top_tracks(request, time_range, name, context):
         return redirect("spotify_auth")
 
     offset = int(context["offset"])
-    limit = 5
-    total_tracks = 10
+    limit = 10
+    total_tracks = 50
     show_forward = True
 
     if offset + limit <= total_tracks:

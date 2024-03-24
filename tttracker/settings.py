@@ -5,14 +5,38 @@ import os
 from dotenv import load_dotenv
 
 # ENVIROMENTAL VARIABLES
-load_dotenv(".env")
+# load_dotenv(".env")
+# print("Path to .env:", os.path.abspath(".env"))
+# print("Current working directory:", os.getcwd())
 
+
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
+BASE_DIR = Path(__file__).resolve().parent.parent
+# BASE_DIR: /home/bitnami/djangoapp
+
+
+dotenv_path = BASE_DIR / "tttracker" / ".env"
+# /home/bitnami/djangoapp/tttracker/.env
+load_dotenv(dotenv_path=dotenv_path)
+print("Path to .env:", dotenv_path)
+
+# load_dotenv()
+
+
+# from django.core.management.utils import get_random_secret_key
+# print(get_random_secret_key())
+
+
+# ENVIROMENTAL VARIABLES
 SECRET_KEY = os.environ.get("SECRET_KEY")
+if SECRET_KEY:
+    print("Secret key loaded successfully.")
+else:
+    print("SECRET_KEY is not set!")
 
-# SPOTIFY API settings
 SPOTIFY_CLIENT_ID = os.environ.get("SPOTIFY_CLIENT_ID")
 SPOTIFY_CLIENT_SECRET = os.environ.get("SPOTIFY_CLIENT_SECRET")
-SPOTIFY_REDIRECT_URI = "http://127.0.0.1:8000/callback/"
+SPOTIFY_REDIRECT_URI = "http://18.171.147.94/callback/"
 
 # AWS S3 settings
 AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
@@ -34,6 +58,7 @@ ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
     "18.171.147.94", # AWS Public IP
+    "13.40.128.58", # TopTrackTracker-vm Public IP
     "tttapp.followcrom.online",
 ]
 
@@ -65,7 +90,7 @@ ROOT_URLCONF = "tttracker.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": ["templates"],
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -90,7 +115,7 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": "db.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
     }
 }
 

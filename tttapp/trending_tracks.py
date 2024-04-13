@@ -247,7 +247,7 @@ def start_spotify_playback(request):
         return JsonResponse(
             {
                 "success": True,
-                "message": "Spotify playback started successfully (views)",
+                "message": "Spotify playback started successfully",
             }
         )
     except Exception as e:

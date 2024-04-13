@@ -1,13 +1,11 @@
 # followCrom's Top Track Tracker
 
-![Alt Text](readme_img.png)
+![followCrom's Top Track Tracker](readme_img.png)
 
-## Start the virtual environment
+## Start the virtual environment locally
 
 ```bash
-$ source /.venv/bin/activate
-
-source venv/bin/activate
+source .venv/bin/activate
 ```
 
 (pip install -r requirements.txt)
@@ -16,14 +14,13 @@ source venv/bin/activate
 
 ```python
 python manage.py runserver
+
+# or
+
+python manage.py runserver 8000
 ```
+
 This starts Django's built-in development server.
-
-If you need to run the server on a different port, you can specify it as follows:
-
-```python
-python manage.py runserver 8080
-```
 
 ## Run dev server on the AWS instance
 
@@ -126,7 +123,11 @@ curl --request GET \
 # Logs
 
 ### Access Logs:
-`sudo cat /opt/bitnami/apache2/logs/access_log`
+```bash
+sudo tail -n 20 /opt/bitnami/apache2/logs/access_log
+
+cat /opt/bitnami/apache2/logs/access_log
+```
 
 ### Error Logs:
 ```bash
@@ -140,18 +141,44 @@ or all:
 ### Django files:
 `head -n 20 settings.py`
 
-# Fresh VM
 
-### Connect to LightSail instance
+### CORS:
+
+This may well not be necessary, but if you're having trouble with CORS, you can add the following to your Apache configuration file:
 
 ```bash
-ssh -i ~/.ssh/toptt-aws.pem bitnami@13.40.128.58
+cd /opt/bitnami/apache2/conf/vhosts
+
+sudo nano tttracker-vhost.conf
 ```
 
-### cat top 100 lines of the error log
+More secure:
 
 ```bash
-sudo tail -n 20 /opt/bitnami/apache2/logs/error_log
+<Directory /home/bitnami/djangoapp/tttracker>
+    Header set Access-Control-Allow-Origin "https://tttapp.followcrom.online"
+    <Files wsgi.py>
+        Require all granted
+    </Files>
+</Directory>
+```
+
+Less secure:
+
+```bash
+    <Directory /home/bitnami/djangoapp/tttracker>
+        Header set Access-Control-Allow-Origin "*"
+        <Files wsgi.py>
+            Require all granted
+        </Files>
+    </Directory>
+```
+
+Before these headers will work, ensure that the mod_headers module is enabled in Apache:
+
+```bash
+sudo a2enmod headers
+sudo systemctl restart apache2
 ```
 
 # FileZilla:

@@ -26,6 +26,7 @@ else:
 SPOTIFY_CLIENT_ID = os.environ.get("SPOTIFY_CLIENT_ID")
 SPOTIFY_CLIENT_SECRET = os.environ.get("SPOTIFY_CLIENT_SECRET")
 SPOTIFY_REDIRECT_URI = "https://tttapp.followcrom.online/callback/"
+# SPOTIFY_REDIRECT_URI = "http://127.0.0.1:8000/callback/"
 
 # AWS S3 settings
 AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
@@ -49,6 +50,16 @@ ALLOWED_HOSTS = [
     "18.171.147.94", # AWS Public IP
     "tttapp.followcrom.online",
 ]
+
+CORS_ALLOW_ALL_ORIGINS = True
+
+# CORS_ALLOWED_ORIGINS = [
+#     "https://tttapp.followcrom.online",
+#     "http://localhost:8000",
+# ]
+
+CORS_ALLOW_METHODS = ["DELETE", "GET", "OPTIONS", "PATCH", "POST", "PUT"]
+# CORS_ALLOW_HEADERS = []
 
 
 INSTALLED_APPS = [
@@ -140,8 +151,6 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "home"
 LOGOUT_REDIRECT_URL = "login"
-
-CORS_ALLOW_ALL_ORIGINS = True
 
 # Internationalization
 LANGUAGE_CODE = "en-us"

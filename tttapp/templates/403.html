@@ -5,16 +5,17 @@
 
 <div class="home-content">
     <h1>403 - Forbidden</h1>
-    <p>You have exceeded the rate limit.</p>
+
+    {% if messages %}
+    <h2>{{ message }}</h2>
+    {% else %}
+    <h2>You have exceeded the rate limit for this action. Please try again later.</h2>
+    {% endif %}
+
     <p>
         If you believe this is an error, please contact the site administrator.
     </p>
     <a href="{% url 'home' %}" class="button">Return to Home</a>
-</div>
 
-{% if messages %}
-{% for message in messages %}
-<h3>Messages: {{ message }} </h3>
-{% endfor %}
-{% endif %}
+</div>
 {% endblock %}

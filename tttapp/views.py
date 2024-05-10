@@ -1,9 +1,10 @@
 # views.py
 
 from django.shortcuts import redirect, render
-from django.contrib import messages
 
-from django.contrib.auth.decorators import login_required
+# from django.contrib import messages
+# from django.contrib.auth.decorators import login_required
+
 from django_ratelimit.decorators import ratelimit
 
 from django.views.decorators.http import require_POST
@@ -16,7 +17,7 @@ from .spotify_utils import fetch_top_tracks
 from .user_utils import rate
 
 
-@ratelimit(key="user_or_ip", rate=rate, block=True)
+@ratelimit(key="user", rate=rate, block=True)
 def top_tracks(request, time_range, name, context):
     request.session["pre_auth_url"] = request.get_full_path()
 
@@ -119,7 +120,7 @@ def top_tracks_long_term(request):
 # -----------------------------------------
 from django.conf import settings
 
-@login_required
+# @login_required
 def home(request):
     welcome = "Welcome to the Top Track Tracker"
 
@@ -133,6 +134,7 @@ def home(request):
 # -----------------------------------------
 
 import requests
+import logging
 
 
 def lastfm_play_count(username, api_key):
@@ -161,5 +163,7 @@ def lastfm_play_count(username, api_key):
 
     except Exception as e:
         print(f"An error occurred: {e}")
+        # Log the error to the console
+        logging.error(f"An error occurred: {e}")
 
     return lastfm_info

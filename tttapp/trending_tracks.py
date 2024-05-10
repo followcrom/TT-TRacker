@@ -1,11 +1,11 @@
 from django.http import JsonResponse
 from django.http import HttpResponse
-
-from .models import TrendingTracks
-
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.views.decorators.http import require_POST
+
+from .models import TrendingTracks
+
 from .spotify_client import get_spotipy_client
 
 
@@ -168,7 +168,7 @@ def upload_trending_tracks(request):
         csv_file = request.FILES["csv_file"]
 
         if not csv_file.name.endswith(".csv"):
-            messages.error(request, "\u2717 Error: Not a CSV file")
+            messages.error(request, "Error: Not a CSV file")
             messages.add_message(request, messages.INFO, "Please try again")
             return redirect("view_trending_tracks")
 
@@ -205,7 +205,7 @@ def upload_trending_tracks(request):
             TrendingTracks.objects.bulk_create(uploads)
 
         num_uploads = len(uploads)
-        messages.success(request, f"\u2713 CSV processed: {num_uploads} tracks added")
+        messages.success(request, f"CSV processed: {num_uploads} tracks added")
         messages.add_message(request, messages.WARNING, "Duplicates were ignored")
 
     else:
@@ -251,4 +251,4 @@ def start_spotify_playback(request):
             }
         )
     except Exception as e:
-        return JsonResponse({"success": False, "message": str(e)})
+        return JsonResponse({"success": False, "message": "Error occurred: " + str(e)})

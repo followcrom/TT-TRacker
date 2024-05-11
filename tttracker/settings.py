@@ -104,11 +104,11 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "tttracker.wsgi.application"
 
-SESSION_ENGINE = "django.contrib.sessions.backends.db"
 
+SESSION_ENGINE = "django.contrib.sessions.backends.db" # Use the database for sessions
 SESSION_COOKIE_AGE = 5000
-
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
 
 
 DATABASES = {

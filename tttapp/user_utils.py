@@ -16,7 +16,7 @@ def rate_limit_exceeded(request, exception):
 # -----------------------------------------
 
 # Custom rate function
-def rate(request):
+def rate(group, request):
     if request.user.is_authenticated:
         rate = "1000/m"
     else:

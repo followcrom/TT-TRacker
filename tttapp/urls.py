@@ -45,6 +45,5 @@ urlpatterns = [
     ),
     path("accounts/", include("django.contrib.auth.urls")),
     path("spotify-auth/", spotify_auth, name="spotify_auth"),
-    path("callback/", spotify_callback, name="spotify_callback"),
-    path("error/", spotify_callback, name="spotify_callback")
+    path("callback/", spotify_callback, name="spotify_callback")
 ]

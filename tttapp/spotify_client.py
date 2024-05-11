@@ -3,6 +3,8 @@ from spotipy.oauth2 import SpotifyOAuth
 import time
 from django.conf import settings
 from django.shortcuts import redirect
+# from django.urls import reverse
+# from django.http import HttpResponseRedirect, HttpResponse
 
 # -----------------------------------------
 
@@ -41,6 +43,10 @@ def spotify_callback(request):
 
         if not code:
             print("No code in request")
+            raise ValueError("No code in request")
+
+        # Print the redirect URI from settings
+        print(f"SPOTIFY_REDIRECT_URI used: {settings.SPOTIFY_REDIRECT_URI}")
 
         token_info = sp_oauth.get_access_token(code)
         request.session["token_info"] = token_info
@@ -49,12 +55,14 @@ def spotify_callback(request):
 
         # Retrieve the stored URL or default to 'home' if not found
         redirect_url = request.session.get("pre_auth_url", "home")
+        print(f"Redirecting to: {redirect_url}")
 
     except Exception as e:
-        print(f"Error in Spotify callback: {e}")
-        redirect_url = "error"
+        print(f"Error in spotify_callback: {e}")
+        redirect_url = "home"
 
     return redirect(redirect_url)
+
 
 
 # -----------------------------------------

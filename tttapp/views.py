@@ -2,8 +2,8 @@
 
 from django.shortcuts import redirect, render
 
-# from django.contrib import messages
-# from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 
 from django_ratelimit.decorators import ratelimit
 
@@ -20,6 +20,8 @@ from .user_utils import rate
 @ratelimit(key="user", rate=rate, block=True)
 def top_tracks(request, time_range, name, context):
     request.session["pre_auth_url"] = request.get_full_path()
+    print(f"Session pre_auth_url set to: {request.session['pre_auth_url']}")
+    request.session.modified = True
 
     sp = get_spotipy_client(request)
 

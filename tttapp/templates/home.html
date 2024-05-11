@@ -6,11 +6,11 @@
 
     {% if user.is_authenticated %}
     <h2><i class="fa-regular fa-face-smile"></i>
-        Hi {{ user.username }}!
+        Home: Hi {{ user.username }}!
     </h2>
 
     <ul>
-        {% for track in lastfm|slice:"3:29" %} <!-- tracks to display -->
+        {% for track in lastfm|slice:"10:30" %} <!-- tracks to display -->
         <li><strong>{{ track.name|slice:":30" }}</strong> by {{ track.artist }} (Playcount: {{ track.playcount }})</li>
         <!-- chars to display -->
         {% endfor %}
@@ -20,15 +20,11 @@
 
     {% else %}
 
-    {{ welcome }}
+    <h2><i class="fa-regular fa-face-smile"></i>{{ welcome }}</h2>
 
-    <h1>Please login to continue</h1>
+    <h1>Home: Please login to continue</h1>
     <a href="{% url 'login' %}" class="button" style="color: #004897;">Log In</a>
     {% endif %}
-
-
-
-
 
 </div>
 

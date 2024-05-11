@@ -49,32 +49,7 @@ Security group rule that only my IP can access the instance.
 ssh -i ~/.ssh/ttt-lightsail.pem bitnami@18.171.147.94
 ```
 
-## Access the DB:
 
-All saved records are stored in the TrendingTracks model. View, add and remove tracks via the console in the U.I.
-
-For full database entry details:
-
-```python
-python3 access_trending_tracks.py
-```
-
-Fields:
-  - artist
-  - song
-  - album
-  - release_year
-  - popularity
-  - uri
-  - genres
-  - energy
-  - key
-  - valence
-  - mood
-  - tempo
-  - artist_uri
-        
-**Note**: In Django, every model automatically gets an id field: an auto-incrementing primary key for the model, identifying each record in the database table associated with your model. You don't need to define this field; Django takes care of it for you.
 
 ## Debug Mode
 
@@ -112,15 +87,34 @@ curl --request GET \
 
 # Apache
 
-## Config test:
+## Fixing the .cache Issue
 
-`sudo apachectl configtest`
+There is a potential issue with writing session info to the Apache (LightSail) server. When I copied to the .`cache` file from local to LightSail, I began getting 500 errors when 'Calling Spotify...' from `spotify_client.py -> spotify_callback`.
 
-## Status:
-`sudo /opt/bitnami/ctlscript.sh status apache`
+Atempt to fix this by changing permissions for the .cache file on the Apache server. It should be in the `djangoapp` directory:
 
-## Restart Apache:
-`sudo /opt/bitnami/ctlscript.sh restart apache`
+```bash
+sudo chown -R www-data:www-data .cache
+
+# Restart Apache:
+sudo /opt/bitnami/ctlscript.sh restart apache
+```
+
+This resulted in: **-rw-r--r-- 1 www-data www-data    532 May 11 16:05 .cache**
+
+I wonder if the server has to have permissions to write to the .cache file? Even after this I continued to the get _Couldn't write token to cache at: .cache_ in the error logs, but this was around the time the 500 errors were resolved, so it is worth noting.
+
+
+```bash
+# Config test:
+sudo apachectl configtest
+
+# Status:
+sudo /opt/bitnami/ctlscript.sh status apache
+
+# Restart Apache:
+sudo /opt/bitnami/ctlscript.sh restart apache
+```
 
 # Logs
 
@@ -143,6 +137,41 @@ or all:
 ### Django files:
 `head -n 20 settings.py`
 
+# Database
+
+```bash
+python manage.py makemigrations
+
+python manage.py migrate
+```
+
+### Access the DB:
+
+All saved records are stored in the TrendingTracks model. View, add and remove tracks via the console in the U.I.
+
+For full database entry details:
+
+```python
+python3 access_trending_tracks.py
+```
+
+Fields:
+  - artist
+  - song
+  - album
+  - release_year
+  - popularity
+  - uri
+  - genres
+  - energy
+  - key
+  - valence
+  - mood
+  - tempo
+  - artist_uri
+
+
+**Note**: In Django, every model automatically gets an id field: an auto-incrementing primary key for the model, identifying each record in the database table associated with your model. You don't need to define this field; Django takes care of it for you.
 
 ### CORS:
 
@@ -180,7 +209,42 @@ Before these headers will work, ensure that the mod_headers module is enabled in
 
 ```bash
 sudo a2enmod headers
-sudo systemctl restart apache2
+sudo /opt/bitnami/ctlscript.sh restart apache
+```
+
+## Fix Attempts if Necessary
+
+
+#### Use curl to test the callback URL:
+
+```bash
+curl "https://tttapp.followcrom.online/callback/?code=<auth-code>"
+
+# Here's an example of what the command might look like:
+curl "http://localhost:8000/callback/?code=AQBx9dKc..."
+```
+
+#### Clear the cache:
+
+`rm .cache`
+
+#### Temporarily run Django app using the development server on AWS
+
+```bash
+sudo systemctl stop apache2
+
+# Then start your Django development server:
+python manage.py runserver 0.0.0.0:8000
+```
+
+#### Overwrite file with a specific commit version
+
+```bash
+# Identify the Commit Hash:
+git log
+
+# Check Out the Specific File from the Commit:
+git checkout <commit-hash> -- <path-to-file>
 ```
 
 # FileZilla:

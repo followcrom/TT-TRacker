@@ -43,6 +43,8 @@ Login with AWS or Local account: **docs/users.txt**
 
 ### Connect to LightSail instance
 
+Security group rule that only my IP can access the instance.
+
 ```bash
 ssh -i ~/.ssh/ttt-lightsail.pem bitnami@18.171.147.94
 ```

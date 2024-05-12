@@ -4,20 +4,20 @@
 
 <div class="home-content">
     {% if user.is_authenticated %}
-    <h2>Login: Hi {{ user.username }}!</h2>
+    <h2>👋 Hi {{ user.username }}!</h2>
 
     <form action="{% url 'logout' %}" method="post">
         {% csrf_token %}
-        <button type="submit" class="centered-button">Logout</button>
+        <button type="submit" class="login-button">Logout</button>
     </form>
 
     {% else %}
-    <!-- <a href="{% url 'login' %}">Log In</a> -->
-    <h2>Login: Please login to continue</h2>
+
+    <h2>Please login to continue</h2>
     <form method="post" class="form-container">
         {% csrf_token %}
         {{ form.as_p }}
-        <button type="submit" class="centered-button">Login</button>
+        <button type="submit" class="login-button">Login</button>
     </form>
     {% endif %}
 </div>

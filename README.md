@@ -2,17 +2,19 @@
 
 ![followCrom's Top Track Tracker](readme_img.png)
 
-## Start the virtual environment locally
+## Start the virtual environment locally 👨🏻‍💻
 
 ```bash
 source .venv/bin/activate
 ```
 
-(pip install -r requirements.txt)
+#### Install the requirements
+
+`pip install -r requirements.txt`
 
 ## Start the Dev server (default port 8000)
 
-```python
+```bash
 python manage.py runserver
 
 # or
@@ -22,7 +24,17 @@ python manage.py runserver 8000
 
 This starts Django's built-in development server.
 
-## Run dev server on the AWS instance
+## Run dev server on the AWS instance 👦
+
+🆕 **Untested**
+
+Stop the Apache server to free up the port for the Django development server.
+
+```bash
+sudo systemctl stop apache2
+```
+
+Then start your Django development server:
 
 ```bash
 python manage.py runserver 0.0.0.0:8000
@@ -33,25 +45,12 @@ python manage.py runserver 0.0.0.0:8000
 8000 specifies the port number on which the server will listen for requests.
 Open your web browser and go to http://VM-Public-IP:8000
 
-## Log into the app:
+## Log into the app: 🔑
 
 Login with AWS or Local account: **docs/users.txt**
 
 
-## Login to the Apache server
-
-
-### Connect to LightSail instance
-
-Security group rule that only my IP can access the instance.
-
-```bash
-ssh -i ~/.ssh/ttt-lightsail.pem bitnami@18.171.147.94
-```
-
-
-
-## Debug Mode
+## Debug Mode 🕵🏻‍♀️
 
 Never run a production site in Debug mode as it can expose sensitive information and make your site vulnerable to attacks.
 
@@ -60,34 +59,61 @@ settings.py
 DEBUG = False
 ```
 
-## Renew Secret Key
+## Renew Secret Key 🔐
 
 ```python
 from django.core.management.utils import get_random_secret_key
 print(get_random_secret_key())
 ```
 
+# Design 🎨
 
-## Upload Static Files
+To edit the styles locally: in settings.py ensure that Local static settings are uncommented and S3 static settings are commented out.
+
+Once you have made your changes, uncomment the S3 static settings. **LEAVE the Local static settings uncommented**, then run the following command:
 
 ```bash
 python manage.py collectstatic
 ```
 
-This command will prompt you to confirm the upload of your static files to the S3 bucket. Type yes to proceed.
+This will prompt you to confirm the upload of your static files to the S3 bucket. Type yes to proceed.
 
-## Test the user-top-read endpoint
+Once the static files have been uploaded to the S3 bucket, you can comment out the Local static settings to use the S3 static files.
+
+# Apache 🐎
+
+### Connect to LightSail instance
+
+Security group rule means that only my IP can access the instance.
 
 ```bash
-curl --request GET \
-  --url 'https://api.spotify.com/v1/me/top/tracks?time_range=short_term&offset=0' \
-  --header 'Authorization: Bearer xxx'
+ssh -i ~/.ssh/ttt-lightsail.pem bitnami@18.171.147.94
 ```
+
+# Logs 📝
+
+### Access Logs:
+```bash
+sudo tail -n 20 /opt/bitnami/apache2/logs/access_log
+
+cat /opt/bitnami/apache2/logs/access_log
+```
+
+### Error Logs:
+```bash
+sudo tail -n 20 /opt/bitnami/apache2/logs/error_log
+```
+
+or all:
+
+`sudo cat /opt/bitnami/apache2/logs/error_log`
+
+### Django files:
+`head -n 20 settings.py`
+
 <br>
 
-# Apache
-
-## Fixing the .cache Issue
+## Fixing the .cache Issue 👷
 
 There is a potential issue with writing session info to the Apache (LightSail) server. When I copied to the .`cache` file from local to LightSail, I began getting 500 errors when 'Calling Spotify...' from `spotify_client.py -> spotify_callback`.
 
@@ -116,28 +142,9 @@ sudo /opt/bitnami/ctlscript.sh status apache
 sudo /opt/bitnami/ctlscript.sh restart apache
 ```
 
-# Logs
+<br>
 
-### Access Logs:
-```bash
-sudo tail -n 20 /opt/bitnami/apache2/logs/access_log
-
-cat /opt/bitnami/apache2/logs/access_log
-```
-
-### Error Logs:
-```bash
-sudo tail -n 20 /opt/bitnami/apache2/logs/error_log
-```
-
-or all:
-
-`sudo cat /opt/bitnami/apache2/logs/error_log`
-
-### Django files:
-`head -n 20 settings.py`
-
-# Database
+# Database 🛢
 
 ```bash
 python manage.py makemigrations
@@ -149,7 +156,7 @@ python manage.py migrate
 
 All saved records are stored in the TrendingTracks model. View, add and remove tracks via the console in the U.I.
 
-For full database entry details:
+For local database entry details run on the local machine. For the AWS instance, run on the server.
 
 ```python
 python3 access_trending_tracks.py
@@ -170,8 +177,87 @@ Fields:
   - tempo
   - artist_uri
 
+<br>
 
 **Note**: In Django, every model automatically gets an id field: an auto-incrementing primary key for the model, identifying each record in the database table associated with your model. You don't need to define this field; Django takes care of it for you.
+
+You can access the the auth_user table in your database via the Django admin interface at /admin/ or:
+
+```bash
+python display_users.py
+```
+
+<br>
+
+# New Users 🧑‍💻
+
+Credentials: **docs/users.txt**
+
+### Create a Superuser
+
+`python manage.py createsuperuser`
+
+Follow the prompts to create the superuser.
+
+### Create a new AWS user 
+
+Navigate to https://tttapp.followcrom.online/admin/ and log in with the AWS superuser credentials. In the admin interface, "Add User".
+
+### Create a new local user
+
+Navigate to /admin/ in your browser and log in with the local superuser credentials.
+
+### Exporting Users
+
+You can export user data from your current database using Django's management commands or custom scripts.
+
+```bash
+python manage.py dumpdata auth.user --output users.json
+```
+
+<br>
+
+# Fix Attempts if Necessary 👷
+
+### Test the user-top-read endpoint
+
+```bash
+curl --request GET \
+  --url 'https://api.spotify.com/v1/me/top/tracks?time_range=short_term&offset=0' \
+  --header 'Authorization: Bearer xxx'
+```
+
+### Use curl to test the callback URL:
+
+```bash
+curl "https://tttapp.followcrom.online/callback/?code=<auth-code>"
+
+# Here's an example of what the command might look like:
+curl "http://localhost:8000/callback/?code=AQBx9dKc..."
+```
+
+### Clear the cache:
+
+`rm .cache`
+
+### Temporarily run Django app using the development server on AWS
+
+```bash
+sudo systemctl stop apache2
+
+# Then start your Django development server:
+python manage.py runserver 0.0.0.0:8000
+```
+
+### Overwrite file with a specific commit version
+
+```bash
+# Identify the Commit Hash:
+git log
+
+# Check Out the Specific File from the Commit:
+git checkout <commit-hash> -- <path-to-file>
+```
 
 ### CORS:
 
@@ -211,42 +297,8 @@ Before these headers will work, ensure that the mod_headers module is enabled in
 sudo a2enmod headers
 sudo /opt/bitnami/ctlscript.sh restart apache
 ```
+<br>
 
-## Fix Attempts if Necessary
-
-
-#### Use curl to test the callback URL:
-
-```bash
-curl "https://tttapp.followcrom.online/callback/?code=<auth-code>"
-
-# Here's an example of what the command might look like:
-curl "http://localhost:8000/callback/?code=AQBx9dKc..."
-```
-
-#### Clear the cache:
-
-`rm .cache`
-
-#### Temporarily run Django app using the development server on AWS
-
-```bash
-sudo systemctl stop apache2
-
-# Then start your Django development server:
-python manage.py runserver 0.0.0.0:8000
-```
-
-#### Overwrite file with a specific commit version
-
-```bash
-# Identify the Commit Hash:
-git log
-
-# Check Out the Specific File from the Commit:
-git checkout <commit-hash> -- <path-to-file>
-```
-
-# FileZilla:
+# FileZilla 🦖
 
 **.pem keys** are in Edit -> Settings -> SFTP -> Add Key File

@@ -124,7 +124,7 @@ from django.conf import settings
 
 # @login_required
 def home(request):
-    welcome = "Welcome to the Top Track Tracker"
+    welcome = "Welcome to followCrom's Top Track Tracker"
 
     lastfm_api_key = settings.LASTFM_API_KEY
     lastfm_username = settings.LASTFM_USERNAME

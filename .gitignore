@@ -25,4 +25,6 @@ docs
 
 # Other files #
 access_trending_tracks.py
+display_users.py
 .cache
+users.json

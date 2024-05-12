@@ -8,7 +8,7 @@ from django.shortcuts import render
 def rate_limit_exceeded(request, exception):
     messages.error(
         request,
-        "You have exceeded the rate limit for this action. Please try again later.",
+        "You have exceeded the rate limit for this action.\nPlease try again later.",
     )
     return render(request, "403.html", status=403)
 

@@ -11,22 +11,21 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 dotenv_path = BASE_DIR / "tttracker" / ".env"
-# /home/bitnami/djangoapp/tttracker/.env
+# print("Path to .env:", dotenv_path)
 load_dotenv(dotenv_path=dotenv_path)
-print("Path to .env:", dotenv_path)
 
 
 # ENVIROMENTAL VARIABLES
 SECRET_KEY = os.environ.get("SECRET_KEY")
-if SECRET_KEY:
-    print("Secret key loaded successfully.")
-else:
-    print("SECRET_KEY is not set!")
+# if SECRET_KEY:
+#     print("Secret key loaded successfully.")
+# else:
+#     print("SECRET_KEY is not set!")
 
 SPOTIFY_CLIENT_ID = os.environ.get("SPOTIFY_CLIENT_ID")
 SPOTIFY_CLIENT_SECRET = os.environ.get("SPOTIFY_CLIENT_SECRET")
-SPOTIFY_REDIRECT_URI = "https://tttapp.followcrom.online/callback/"
-# SPOTIFY_REDIRECT_URI = "http://127.0.0.1:8000/callback/"
+# SPOTIFY_REDIRECT_URI = "https://tttapp.followcrom.online/callback/"
+SPOTIFY_REDIRECT_URI = "http://127.0.0.1:8000/callback/"
 
 # AWS S3 settings
 AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
@@ -42,7 +41,7 @@ LASTFM_USERNAME = os.environ.get("LASTFM_USERNAME")
 
 
 # Turn off for production
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = [
     "localhost",
@@ -107,7 +106,7 @@ WSGI_APPLICATION = "tttracker.wsgi.application"
 
 SESSION_ENGINE = "django.contrib.sessions.backends.db" # Use the database for sessions
 SESSION_COOKIE_AGE = 5000
-SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 
 
 
@@ -134,8 +133,8 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-# Local static settings
-# STATIC_URL = "/static/"  # uncomment to `collectstatic``
+# Local static settings. Need to be uncommented to `collectstatic`
+# STATIC_URL = "/static/"
 # STATICFILES_DIRS = [os.path.join("static")]
 
 

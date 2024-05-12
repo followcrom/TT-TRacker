@@ -24,8 +24,8 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 
 SPOTIFY_CLIENT_ID = os.environ.get("SPOTIFY_CLIENT_ID")
 SPOTIFY_CLIENT_SECRET = os.environ.get("SPOTIFY_CLIENT_SECRET")
-# SPOTIFY_REDIRECT_URI = "https://tttapp.followcrom.online/callback/"
-SPOTIFY_REDIRECT_URI = "http://127.0.0.1:8000/callback/"
+SPOTIFY_REDIRECT_URI = "https://tttapp.followcrom.online/callback/"
+# SPOTIFY_REDIRECT_URI = "http://127.0.0.1:8000/callback/"
 
 # AWS S3 settings
 AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
@@ -41,7 +41,7 @@ LASTFM_USERNAME = os.environ.get("LASTFM_USERNAME")
 
 
 # Turn off for production
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = [
     "localhost",

@@ -203,7 +203,7 @@ pip install gunicorn
 **Step 12**: Create a Systemd Service File for Gunicorn
 
 ```bash
-nano /etc/systemd/system/gunicorn.service
+nano /etc/systemd/system/gunicorn.service # could call this ttt.service
 ```
 
 Add the following content:
@@ -298,19 +298,75 @@ ufw enable
 ufw status verbose
 ```
 
-**Step 20**: Verify and Launch the Services (if necessary)
+**Step 20**: Verify and Launch / Restart the Services (if necessary)
+
+1️⃣ Restart Gunicorn First
+
+This is your WSGI application server, and it directly runs your application code. Restarting it first ensures that any new code changes or application updates are picked up and running. If Gunicorn is not restarted first, Nginx might still route requests to the old version of your application.
 
 ```bash
 systemctl restart gunicorn
 systemctl status gunicorn
+```
 
-systemctl restart nginx
+2️⃣ Reload Nginx Second
+
+Reason: Nginx is the web server that acts as a reverse proxy for Gunicorn. Restarting Nginx second ensures that it starts routing requests to the newly restarted Gunicorn server.
+
+```bash
+systemctl reload nginx
 systemctl status nginx
 ```
 
 **Step 21**: Access Your Application
 
 Open your web browser and go to your droplet's IP address or domain name.
+
+<br>
+
+# HTTPS with Let's Encrypt
+
+**Step 1**: Install Certbot
+
+```bash
+apt install certbot python3-certbot-nginx
+```
+
+**Step 2**: Obtain a Certificate
+
+```bash
+certbot --nginx -d ttt.followcrom.online -d www.ttt.followcrom.online
+```
+
+**Step 3**: Verify the Auto-Renewal
+
+```bash
+certbot renew --dry-run
+```
+
+**Step 4**: List Certificates
+
+```bash
+certbot certificates
+```
+Found the following certs:
+
+- Certificate Name: ttt.followcrom.online
+- Serial Number: 34a74f280134c0bfc2cd204963c76e46722
+- Key Type: RSA
+- Domains: ttt.followcrom.online
+- Expiry Date: 2024-11-03 20:59:32+00:00 (VALID: 89 days)
+- Certificate Path: /etc/letsencrypt/live/ttt.followcrom.online/fullchain.pem
+- Private Key Path: /etc/letsencrypt/live/ttt.followcrom.online/privkey.pem
+
+**Step 5**: Handle unused Let's Encrypt certificates
+
+```bash
+certbot revoke --cert-path /ec/letsencrypt/live/ttt.followcrom.online/fullchain.pem
+
+# Delete Unused Certificate:
+certbot delete
+```
 
 <br>
 
@@ -332,9 +388,9 @@ Once the static files have been uploaded to the S3 bucket, you can comment out t
 
 <br>
 
-# 👨‍🔧 Troubleshooting
+# 👨‍🔧 Troubleshooting 🕵
 
-### Check Logs:
+### Check Logs
 
 ```bash
 tail -f /var/log/nginx/error.log
@@ -344,18 +400,18 @@ tail -20 /var/log/nginx/access.log
 journalctl -u gunicorn -f
 ```
 
-### Ensure all the domain names and IP addresses are added to the ALLOWED_HOSTS in settings.py
+### Allowed Hosts
 
-Django will return a 400 Bad Request if the request's Host header doesn't match any entry in ALLOWED_HOSTS.
+Ensure all the domain names and IP addresses are added to the ALLOWED_HOSTS in `settings.py`. Django will return a _400 Bad Request_ if the request's Host header doesn't match any entry in ALLOWED_HOSTS.
 
-### Verify that both services are running without errors:
+### Verify that both services are running without errors
 
 ```bash
 systemctl status gunicorn
 systemctl status nginx
 ```
 
-### Interaction between Nginx and the backend application (Gunicorn)
+### Interaction between Nginx and Gunicorn
 
 Run Gunicorn manually for debugging purposes:
 

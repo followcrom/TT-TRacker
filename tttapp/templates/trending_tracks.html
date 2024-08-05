@@ -9,6 +9,8 @@
 <div class="topRow">
     <button id="startPlaybackButton" class="button" style="color: greenyellow;">Start Spotify Playback</button>
 
+    <button id="recommendations" class="button" style="color: greenyellow;">Get Recommendations</button>
+
 
     <!-- this hides the default upload form and allows me to use a css button -->
     <form id="upload-form" method="post" action="{% url 'upload-trending-tracks' %}" enctype="multipart/form-data">
@@ -152,6 +154,25 @@
                     console.log(data.message);
                 } else {
                     console.error("Error starting Spotify playback:", data.message);
+                }
+            })
+            .catch(error => {
+                console.error("Error sending request:", error);
+            });
+    });
+</script>
+
+<script>
+    // Add an event listener to the button
+    document.getElementById("recommendations").addEventListener("click", function () {
+        // Send an HTTP request to the Django view that starts Spotify playback
+        fetch("/recommendations/")
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log(data.message);
+                } else {
+                    console.error("Error getting recommendations:", data.message);
                 }
             })
             .catch(error => {

@@ -252,3 +252,34 @@ def start_spotify_playback(request):
         )
     except Exception as e:
         return JsonResponse({"success": False, "message": "Error occurred: " + str(e)})
+    
+
+# -----------------------------------------
+
+
+def get_recommendations(request):
+    sp = get_spotipy_client(request)
+    if not sp:
+        return redirect("spotify_auth")
+    
+    try:
+        # Retrieve the URIs from TrendingTracks
+        trending_tracks = TrendingTracks.objects.all()
+        track_uris = [track.uri for track in trending_tracks]
+        
+        # Get recommendations using track URIs as seed_tracks
+        recommendations = sp.recommendations(seed_tracks=track_uris, limit=2)
+        
+        # Process the recommendations as needed
+        recommended_tracks = recommendations['tracks']
+        
+        # Return or render the recommendations
+        return JsonResponse({
+            "success": True,
+            "recommended_tracks": recommended_tracks
+        })
+    
+    except Exception as e:
+        # Handle exceptions
+        print(f"Error getting recommendations: {e}")
+        return JsonResponse({"success": False, "message": "Error occurred: " + str(e)})

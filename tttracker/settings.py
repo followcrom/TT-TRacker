@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-# BASE_DIR: /home/bitnami/djangoapp
+# print("BASE_DIR:", BASE_DIR)
 
 
 dotenv_path = BASE_DIR / "tttracker" / ".env"
@@ -24,8 +24,8 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 
 SPOTIFY_CLIENT_ID = os.environ.get("SPOTIFY_CLIENT_ID")
 SPOTIFY_CLIENT_SECRET = os.environ.get("SPOTIFY_CLIENT_SECRET")
-# SPOTIFY_REDIRECT_URI = "https://ttt.followcrom.online/callback/"
-SPOTIFY_REDIRECT_URI = "http://188.166.155.230/callback/"
+SPOTIFY_REDIRECT_URI = "https://ttt.followcrom.online/callback/"
+# SPOTIFY_REDIRECT_URI = "http://188.166.155.230/callback/"
 # SPOTIFY_REDIRECT_URI = "http://127.0.0.1:8000/callback/"
 
 # AWS S3 settings
@@ -137,7 +137,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Local static settings. Need to be uncommented to `collectstatic`
 # STATIC_URL = "/static/"
-# STATICFILES_DIRS = [os.path.join("static")]
+# STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
+# print("STATICFILES_DIRS:", STATICFILES_DIRS)
 
 
 # S3 Static settings
@@ -156,7 +157,7 @@ LOGOUT_REDIRECT_URL = "login"
 # Internationalization
 LANGUAGE_CODE = "en-uk"
 
-TIME_ZONE = "UTC"
+TIME_ZONE = "GMT"
 
 USE_I18N = True
 

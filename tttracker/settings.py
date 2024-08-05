@@ -24,7 +24,8 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 
 SPOTIFY_CLIENT_ID = os.environ.get("SPOTIFY_CLIENT_ID")
 SPOTIFY_CLIENT_SECRET = os.environ.get("SPOTIFY_CLIENT_SECRET")
-SPOTIFY_REDIRECT_URI = "https://tttapp.followcrom.online/callback/"
+# SPOTIFY_REDIRECT_URI = "https://ttt.followcrom.online/callback/"
+SPOTIFY_REDIRECT_URI = "http://188.166.155.230/callback/"
 # SPOTIFY_REDIRECT_URI = "http://127.0.0.1:8000/callback/"
 
 # AWS S3 settings
@@ -46,14 +47,15 @@ DEBUG = False
 ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
-    "18.171.147.94", # AWS Public IP
-    "tttapp.followcrom.online",
+    "188.166.155.230", # D.O. Public IP
+    "www.ttt.followcrom.online",
+    "ttt.followcrom.online",
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True
 
 # CORS_ALLOWED_ORIGINS = [
-#     "https://tttapp.followcrom.online",
+#     "https://ttt.followcrom.online",
 #     "http://localhost:8000",
 # ]
 
@@ -152,7 +154,7 @@ LOGIN_REDIRECT_URL = "home"
 LOGOUT_REDIRECT_URL = "login"
 
 # Internationalization
-LANGUAGE_CODE = "en-us"
+LANGUAGE_CODE = "en-uk"
 
 TIME_ZONE = "UTC"
 

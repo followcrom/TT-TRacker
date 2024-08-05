@@ -230,7 +230,7 @@ chown -R www-data:www-data /var/www/ttt
 chmod -R 755 /var/www/ttt
 ```
 
-👉 [Troubleshoot interaction between Nginx and the backend application (Gunicorn)](#interaction-between-nginx-and-the-backend-application-gunicorn)
+👉 [Troubleshoot interaction between Nginx and the backend application (Gunicorn)](#interaction-between-nginx-and-gunicorn)
 
 **Step 14**: Start and Enable Gunicorn
 
@@ -255,13 +255,47 @@ server {
         proxy_pass http://unix:/var/www/ttt/tttracker.sock;
     }
 
-    location /static/ {
-        alias /var/www/ttt/static/;
-    }
+   #  location /static/ {
+   #     alias /var/www/ttt/static/;
+   #  }
 }
 ```
 
-Ensure that your Django ALLOWED_HOSTS setting includes your domain names and IP address. Django will return a 400 Bad Request if the request's Host header doesn't match any entry in ALLOWED_HOSTS.
+Updated after running Certbot (this is done automatically by Certbot). Also don't need to serve static files from Nginx as they are served from S3.
+
+```nginx
+server {
+    server_name www.ttt.followcrom.online ttt.followcrom.online 188.166.155.230;
+
+    location / {
+        include proxy_params;
+        proxy_pass http://unix:/var/www/ttt/tttracker.sock;
+    }
+
+   #  location /static/ {
+   #     alias /var/www/ttt/static/;
+   #  }
+
+    listen 443 ssl; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/ttt.followcrom.online/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/ttt.followcrom.online/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+
+}
+server {
+    if ($host = ttt.followcrom.online) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+    listen 80;
+    server_name www.ttt.followcrom.online ttt.followcrom.online 188.166.155.230;
+    return 404; # managed by Certbot
+}
+```
+
+
+Ensure that **ALLOWED_HOSTS** includes your domain names and IP address. Django will return a _400 Bad Request_ if the request's Host header doesn't match any entry in ALLOWED_HOSTS.
 
 **Step 16**: Create a Symlink
 
@@ -283,11 +317,11 @@ nginx -t
 systemctl reload nginx
 ```
 
-#### Reload vs. Restart ⟳
+#### ✅ Reload vs. Restart ⟳
 
-Reload: This tells Nginx to reload its configuration files without stopping the service. This is generally less disruptive as it doesn’t interrupt active connections.
+**Reload** tells Nginx to reload its configuration files without stopping the service. This is generally less disruptive as it doesn’t interrupt active connections.
 
-Restart: This stops and then starts the Nginx service, which can interrupt active connections but ensures that all configuration changes are applied. (`sudo systemctl restart nginx`.)
+**Restart** stops and then starts the Nginx service, which can interrupt active connections but ensures that all configuration changes are applied. (`sudo systemctl restart nginx`.)
 
 **Step 19**: Configure the Firewall
 
@@ -322,9 +356,11 @@ systemctl status nginx
 
 Open your web browser and go to your droplet's IP address or domain name.
 
+🤩 [Top Track Tracker on Digital Ocean](https://ttt.followcrom.online/) 😎👌🔥
+
 <br>
 
-# HTTPS with Let's Encrypt
+# 🔐 HTTPS with Let's Encrypt
 
 **Step 1**: Install Certbot
 
@@ -370,7 +406,7 @@ certbot delete
 
 <br>
 
-# 🎨 Design
+# 🎨 Design 🖼️
 
 ### Locally
 

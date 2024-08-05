@@ -1,4 +1,4 @@
-# Top Track Tracker on SURFACE
+# 📼⋆.˚🎧 Top Track Tracker 🛤️ on SURFACE
 
 `free -h` before:
 
@@ -17,7 +17,7 @@ Git clone the files from the repository and install the dependencies.
 
 (These values change.)
 
-# Local setup
+# 🏠 Local setup
 
 Create a Virtual Environment
 
@@ -37,7 +37,7 @@ Install the dependencies
 pip install -r requirements.txt
 ```
 
-# Database
+# 💾 Database
 
 `py manage.py migrate` (I have set up the alias `py` for `python3` on Surface WSL2.)
 
@@ -51,11 +51,11 @@ I copied the SQlite3 database from DESKTOP to SURFACE. On logging into the admin
 
 At some point an empty DB was created on the Droplet. If you run a setup script or deployment script, it might create a new database as part of the setup process. When you run Django management commands like `python manage.py migrate`, Django creates or updates the SQLite database based on the migration files.
 
-## Users
+## 🙋🏻 Users
 
 You don’t need to create a superuser before you can create other users in Django. A superuser is typically used for administrative purposes and to access the Django admin interface.
 
-1. Creating a Superuser
+1. Creating a Superuser 🦸🏻‍♂️
 
 ```bash
 python manage.py createsuperuser
@@ -63,7 +63,7 @@ python manage.py createsuperuser
 
 Follow the prompts to set a username, email, and password.
 
-2. Creating Regular Users
+2. Creating Regular Users 🙎
 
 If you have created a superuser and have access to the Django admin site (/admin), you can create users through the Django admin interface.
 
@@ -94,7 +94,7 @@ This will read the DB on whichever machine it is run.
 python access_trending_tracks.py
 ```
 
-# Local Development
+# 🏗️ Local Development
 
 Switch between dev and production in `settings.py`:
 
@@ -118,7 +118,7 @@ python manage.py runserver 8080
 
 <br>
 
-# Launching on Digital Ocean
+# Launching on Digital Ocean 🌊🪸🐚🐬
 
 **Step 1**: Create a Digital Ocean Droplet
 
@@ -149,7 +149,7 @@ mkdir /var/www/ttt
 cd /var/www/ttt
 ```
 
-Note: /var/www/ is the standard location for web applications.
+`/var/www/` is the standard location for web applications.
 
 **Step 6**: Clone Git Repository
 
@@ -159,39 +159,40 @@ git clone https://github.com/followcrom/TopTrackTracker.git ttt/
 
 Specifying the directory name `ttt/` defines the name of the directory to be created rather than using the name of the repository.
 
-**Step 6**: Transfer the .env file, which is not in the repository.
+**Step 7**: Transfer the .env file, which is not in the repository.
 
 ```bash
 scp -i ~/.ssh/digiocean .env root@188.166.155.230:/var/www/ttt/tttracker
 ```
 
-**Step 7**: Set Up a Virtual Environment
+**Step 8**: Set Up a Virtual Environment
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
 ```
 
-**Step 8**: Install Dependencies:
+**Step 9**: Install Dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-**Step 9**: Run Migrations:
+**Step 10**: Run Migrations
 
 ```bash
 python manage.py migrate
 ```
-DO NOT RUN Collect Static! This will overwrite the static files in the S3 bucket.
 
-**Step 10**: Install Gunicorn (WSGI server)
+**DO NOT** run Collect Static as this will overwrite the static files in the S3 bucket.
+
+**Step 11**: Install Gunicorn (WSGI server)
 
 ```bash
 pip install gunicorn
 ```
 
-**Step 11**: Create a Systemd Service File for Gunicorn
+**Step 12**: Create a Systemd Service File for Gunicorn
 
 ```bash
 nano /etc/systemd/system/gunicorn.service
@@ -214,23 +215,23 @@ ExecStart=/var/www/ttt/.venv/bin/gunicorn --access-logfile - --workers 3 --bind 
 WantedBy=multi-user.target
 ```
 
-**Step 12**: Ensure that the web server user (www-data for Nginx) has the appropriate permissions to access your project directory.
+**Step 13**: Ensure that the web server user (`www-data` for Nginx) has the appropriate permissions to access your project directory.
 
 ```bash
 chown -R www-data:www-data /var/www/ttt
 chmod -R 755 /var/www/ttt
 ```
 
-[Troubleshoot interaction between Nginx and the backend application (Gunicorn)](#interaction-between-nginx-and-the-backend-application-gunicorn)
+👉 [Troubleshoot interaction between Nginx and the backend application (Gunicorn)](#interaction-between-nginx-and-the-backend-application-gunicorn)
 
-**Step 13**: Start and Enable Gunicorn:
+**Step 14**: Start and Enable Gunicorn
 
 - (systemctl daemon-reload) # Reload the systemd manager configuration if necessary
 - systemctl start gunicorn
 - systemctl enable gunicorn
 - systemctl status gunicorn
 
-**Step 14**: Create an Nginx Configuration File:
+**Step 15**: Create an Nginx Configuration File
 
 `nano /etc/nginx/sites-available/ttt`
 
@@ -254,7 +255,7 @@ server {
 
 Ensure that your Django ALLOWED_HOSTS setting includes your domain names and IP address. Django will return a 400 Bad Request if the request's Host header doesn't match any entry in ALLOWED_HOSTS.
 
-**Step 15**: Create a Symlink
+**Step 16**: Create a Symlink
 
 In `/etc/nginx/` there is both a `sites-available` and `sites-enabled` dir. Create a symlink to sites-enabled:
 
@@ -262,25 +263,25 @@ In `/etc/nginx/` there is both a `sites-available` and `sites-enabled` dir. Crea
 ln -s /etc/nginx/sites-available/ttt /etc/nginx/sites-enabled`
 ```
 
-**Step 16**: Test Nginx Configuration
+**Step 17**: Test Nginx Configuration
 
 ```bash
 nginx -t
 ```
 
-**Step 17**: Reload Nginx to Apply the changes:
+**Step 18**: Reload Nginx to Apply the changes
 
 ```bash
 systemctl reload nginx
 ```
 
-#### Reload vs. Restart
+#### Reload vs. Restart ⟳
 
 Reload: This tells Nginx to reload its configuration files without stopping the service. This is generally less disruptive as it doesn’t interrupt active connections.
 
 Restart: This stops and then starts the Nginx service, which can interrupt active connections but ensures that all configuration changes are applied. (`sudo systemctl restart nginx`.)
 
-**Step 18**: Configure the Firewall
+**Step 19**: Configure the Firewall
 
 ```bash
 ufw allow 'Nginx Full'
@@ -289,7 +290,7 @@ ufw enable
 ufw status verbose
 ```
 
-**Step 19**: Verify and Launch the Services (if necessary)
+**Step 20**: Verify and Launch the Services (if necessary)
 
 ```bash
 systemctl restart gunicorn
@@ -299,11 +300,11 @@ systemctl restart nginx
 systemctl status nginx
 ```
 
-**Step 20**: Access Your Application
+**Step 21**: Access Your Application
 
 Open your web browser and go to your droplet's IP address or domain name.
 
-## Design 🎨
+# 🎨 Design
 
 ### Locally
 
@@ -319,7 +320,7 @@ This will prompt you to confirm the upload of your static files to the S3 bucket
 
 Once the static files have been uploaded to the S3 bucket, you can comment out the Local static settings to use the S3 static files.
 
-## Troubleshooting
+# 👨‍🔧 Troubleshooting
 
 ### Check Logs:
 

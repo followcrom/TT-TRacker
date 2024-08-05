@@ -17,6 +17,8 @@ Git clone the files from the repository and install the dependencies.
 
 (These values change.)
 
+<br>
+
 # 🏠 Local setup
 
 Create a Virtual Environment
@@ -37,6 +39,8 @@ Install the dependencies
 pip install -r requirements.txt
 ```
 
+<br>
+
 # 💾 Database
 
 `py manage.py migrate` (I have set up the alias `py` for `python3` on Surface WSL2.)
@@ -50,6 +54,8 @@ I copied the SQlite3 database from DESKTOP to SURFACE. On logging into the admin
 ### Remote db.sqlite3
 
 At some point an empty DB was created on the Droplet. If you run a setup script or deployment script, it might create a new database as part of the setup process. When you run Django management commands like `python manage.py migrate`, Django creates or updates the SQLite database based on the migration files.
+
+<br>
 
 ## 🙋🏻 Users
 
@@ -93,6 +99,8 @@ This will read the DB on whichever machine it is run.
 ```bash
 python access_trending_tracks.py
 ```
+
+<br>
 
 # 🏗️ Local Development
 
@@ -304,6 +312,8 @@ systemctl status nginx
 
 Open your web browser and go to your droplet's IP address or domain name.
 
+<br>
+
 # 🎨 Design
 
 ### Locally
@@ -319,6 +329,8 @@ This will prompt you to confirm the upload of your static files to the S3 bucket
 ### On Digital Ocean
 
 Once the static files have been uploaded to the S3 bucket, you can comment out the Local static settings to use the S3 static files.
+
+<br>
 
 # 👨‍🔧 Troubleshooting
 

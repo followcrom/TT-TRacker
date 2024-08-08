@@ -118,7 +118,7 @@ def extract_track_info(sp, result):
     return {
         "artist": " & ".join(artist["name"] for artist in result["artists"]),
         "artist_uri": result["artists"][0]["uri"],
-        "song": result["name"].title(),
+        "song": result["name"],
         "uri": result["uri"],
         "release_year": release_year,
         "album": result["album"]["name"],

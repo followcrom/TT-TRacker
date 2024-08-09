@@ -17,6 +17,7 @@ from .trending_tracks import (
     export_trending_tracks,
     upload_trending_tracks,
     get_recommendations,
+    show_recommendations,
 )
 
 from .spotify_client import spotify_auth, spotify_callback
@@ -47,5 +48,6 @@ urlpatterns = [
     path("accounts/", include("django.contrib.auth.urls")),
     path("spotify-auth/", spotify_auth, name="spotify_auth"),
     path("callback/", spotify_callback, name="spotify_callback"),
-    path("recommendations/", get_recommendations, name="recomendations")
+    path("recommendations/", get_recommendations, name="get_recommendations"),
+    path("show_recommendations/", show_recommendations, name="show_recommendations"),
 ]

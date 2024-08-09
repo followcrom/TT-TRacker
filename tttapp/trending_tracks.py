@@ -261,25 +261,44 @@ def get_recommendations(request):
     sp = get_spotipy_client(request)
     if not sp:
         return redirect("spotify_auth")
-    
+
     try:
         # Retrieve the URIs from TrendingTracks
         trending_tracks = TrendingTracks.objects.all()
         track_uris = [track.uri for track in trending_tracks]
+
+        # Limit the track URIs to a maximum of 5
+        seed_tracks = track_uris[:2]
         
         # Get recommendations using track URIs as seed_tracks
-        recommendations = sp.recommendations(seed_tracks=track_uris, limit=2)
+        recommendations = sp.recommendations(seed_tracks=seed_tracks, limit=2)
         
         # Process the recommendations as needed
         recommended_tracks = recommendations['tracks']
         
-        # Return or render the recommendations
-        return JsonResponse({
-            "success": True,
-            "recommended_tracks": recommended_tracks
-        })
+        # Prepare the data for the session
+        tracks_info = []
+        for track in recommended_tracks:
+            tracks_info.append({
+                "artist": ", ".join([artist['name'] for artist in track['artists']]),
+                "song": track['name'],
+                "mood": "N/A",  # Replace with actual mood data if available
+                "genres": "N/A",  # Replace with actual genre data if available
+                "uri": track['external_urls']['spotify'],
+            })
+
+        # Store the recommended tracks in the session
+        request.session['recommended_tracks'] = tracks_info
+
+        # Redirect to the show_recommendations view
+        return redirect("show_recommendations")
     
     except Exception as e:
-        # Handle exceptions
-        print(f"Error getting recommendations: {e}")
-        return JsonResponse({"success": False, "message": "Error occurred: " + str(e)})
+        return JsonResponse({"success": False, "message": str(e)})
+    
+# -----------------------------------------
+
+
+def show_recommendations(request):
+    recommended_tracks = request.session.get('recommended_tracks', [])
+    return render(request, 'recommendations.html', {'recommended_tracks': recommended_tracks})

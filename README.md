@@ -142,6 +142,14 @@ sudo /opt/bitnami/ctlscript.sh status apache
 sudo /opt/bitnami/ctlscript.sh restart apache
 ```
 
+## On Changing Spotify Password
+
+I changed my Spotify password and then tried using the Spotify API but I kept getting hit with error: invalid_grant, error_description: Refresh token revoked. refresh token had been revoked by Spotify by a password change. I needed to mauanlly delete the .cache file and re-authenticate. Just delete the cache file at cache_path. That's where the token info is stored.
+
+```bash
+rm .cache
+```
+
 <br>
 
 # Database 🛢

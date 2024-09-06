@@ -272,10 +272,6 @@ server {
         proxy_pass http://unix:/var/www/ttt/tttracker.sock;
     }
 
-   #  location /static/ {
-   #     alias /var/www/ttt/static/;
-   #  }
-
     listen 443 ssl; # managed by Certbot
     ssl_certificate /etc/letsencrypt/live/ttt.followcrom.online/fullchain.pem; # managed by Certbot
     ssl_certificate_key /etc/letsencrypt/live/ttt.followcrom.online/privkey.pem; # managed by Certbot

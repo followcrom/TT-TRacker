@@ -142,17 +142,51 @@ sudo /opt/bitnami/ctlscript.sh status apache
 sudo /opt/bitnami/ctlscript.sh restart apache
 ```
 
-## On Changing Spotify Password
+## On Changing Spotify Password 🟢ᯤ
 
-I changed my Spotify password and then tried using the Spotify API but I kept getting hit with error: invalid_grant, error_description: Refresh token revoked. refresh token had been revoked by Spotify by a password change. I needed to mauanlly delete the .cache file and re-authenticate. Just delete the cache file at cache_path. That's where the token info is stored.
+On changing my Spotify password, all existing tokens (both access and refresh tokens) were invalidated for security reasons. When I tried using the Spotify API I kept getting hit with error: 
+
+`invalid_grant, error_description: Refresh token revoked`
+
+I needed to mauanlly delete the `.cache` file as that's where the token info is stored. Then, when I hit an endpoint again it re-authenticated.
 
 ```bash
 rm .cache
 ```
 
+### The Authentication Flow 🔀 🏄🏽‍♀️
+
+Here is a simplified explanation of how the tokens and codes work together in the authentication flow:
+
+1. **User Authentication**:
+   - The user logs in to Spotify and grants your application the requested permissions.
+   - Spotify redirects the user back to your application with an **authorization code**.
+
+2. **Token Exchange**:
+   - Your application sends the **authorization code** to Spotify's token endpoint to exchange it for an **access token** and a **refresh token**.
+
+3. **Accessing the API**:
+   - Your application uses the **access token** to make requests to the Spotify API.
+   - When the **access token** expires, your application uses the **refresh token** to request a new **access token**.
+
+### The Codes 📟
+
+1. Authorization Code:
+   - This is a short-lived code obtained when a user authorizes your application.
+   - It's used to request access and refresh tokens.
+   - Generated through the authorization flow when the user grants permission to your app.
+
+2. Access Token:
+   - A short-lived token (usually expires in 1 hour) used to authenticate API requests.
+   - Sent with each API request to prove the application has permission to access user data.
+
+3. Refresh Token:
+   - A long-lived token used to obtain new access tokens without requiring the user to re-authorize.
+   - Typically doesn't expire unless revoked.
+
 <br>
 
-# Database 🛢
+# Database 📟
 
 ```bash
 python manage.py makemigrations
@@ -160,7 +194,7 @@ python manage.py makemigrations
 python manage.py migrate
 ```
 
-### Access the DB:
+### ⌨ Access the DB:
 
 All saved records are stored in the TrendingTracks model. View, add and remove tracks via the console in the U.I.
 

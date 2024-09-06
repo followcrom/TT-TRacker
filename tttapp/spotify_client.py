@@ -77,10 +77,12 @@ def get_spotipy_client(request):
     current_time = time.time()
     expires_at = token_info.get("expires_at", 0)
     if current_time > expires_at:
-        print("Refreshing token...")
+        print("Getting fresh access token...")
         sp_oauth = get_spotify_oauth()
         token_info = sp_oauth.refresh_access_token(token_info["refresh_token"])
-        print("Token info refreshed")
+        print("Access token refreshed")
+        print("\nAccess Token: ", token_info["access_token"])
+        print("\nRefresh info: ", token_info["refresh_token"])
 
         request.session["token_info"] = token_info
         print("New token info saved to session")

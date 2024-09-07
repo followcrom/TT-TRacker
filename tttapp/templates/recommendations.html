@@ -4,6 +4,12 @@
 
 <h1>Recommended Tracks</h1>
 
+<div id="message-area"></div>
+
+{% if message %}
+<h2 style="font-size: 1.6em;">{{ message|safe }}</h2>
+{% else %}
+
 <div class="topRow">
     <button id="startPlaybackButton" class="button" style="color: greenyellow;">Start Spotify Playback</button>
 </div>
@@ -61,7 +67,7 @@
     </tr>
     {% endfor %}
 </table>
-
+{% endif %}
 <br><br>
 
 <!-- JavaScript code -->

@@ -256,6 +256,9 @@ def start_spotify_playback(request):
 
 # -----------------------------------------
 
+import json
+
+from .spotify_utils import add_audio_features_to_tracks, get_artist_genres
 
 def get_recommendations(request):
     sp = get_spotipy_client(request)
@@ -267,11 +270,20 @@ def get_recommendations(request):
         trending_tracks = TrendingTracks.objects.all()
         track_uris = [track.uri for track in trending_tracks]
 
-        # Limit the track URIs to a maximum of 5
+        # The track URIs used to generate recommendations
         seed_tracks = track_uris[:2]
+        
+        # Check if seed_tracks is empty
+        if not seed_tracks:
+            return render(request, 'recommendations.html', {
+                "recommended_tracks": [],
+                "message": "No seed tracks available to generate recommendations.<br>Try adding some tracks to the Trending Tracks list first. 👌"
+            })
         
         # Get recommendations using track URIs as seed_tracks
         recommendations = sp.recommendations(seed_tracks=seed_tracks, limit=2)
+        # print(json.dumps(recommendations, indent=4))
+
         
         # Process the recommendations as needed
         recommended_tracks = recommendations['tracks']
@@ -279,22 +291,39 @@ def get_recommendations(request):
         # Prepare the data for the session
         tracks_info = []
         for track in recommended_tracks:
+            print("External URLs: ", track['external_urls']['spotify'])
             tracks_info.append({
                 "artist": ", ".join([artist['name'] for artist in track['artists']]),
                 "song": track['name'],
-                "mood": "N/A",  # Replace with actual mood data if available
-                "genres": "N/A",  # Replace with actual genre data if available
+                "album": track['album']['name'],
+                "release_year": track['album']['release_date'].split("-")[0],
+                "popularity": track['popularity'],
                 "uri": track['external_urls']['spotify'],
+                "genres": get_artist_genres(sp, track['artists'][0]['id']),
+                # "energy": "N/A",  # Placeholder until audio features are added
+                # "key": "N/A",  # Placeholder until audio features are added
+                # "valence": "N/A",  # Placeholder until audio features are added
+                # "mood": "N/A",  # Placeholder until audio features are added
+                # "tempo": "N/A",  # Placeholder until audio features are added
+                "artist_uri": track["album"]["artists"][0]["uri"],
             })
+
+        # Add audio features to the tracks (in-place update)
+        add_audio_features_to_tracks(sp, tracks_info)
 
         # Store the recommended tracks in the session
         request.session['recommended_tracks'] = tracks_info
 
-        # Redirect to the show_recommendations view
-        return redirect("show_recommendations")
+        # Render the recommendations template
+        return render(request, 'recommendations.html', {
+            "recommended_tracks": tracks_info,
+            "message": ""
+        })
     
     except Exception as e:
-        return JsonResponse({"success": False, "message": str(e)})
+        # Handle exceptions
+        print(f"Error getting recommendations: {e}")
+        return JsonResponse({"success": False, "message": "Error occurred: " + str(e)})
     
 # -----------------------------------------
 

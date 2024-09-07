@@ -115,6 +115,10 @@ def extract_track_info(sp, result):
     artist_id = result["artists"][0]["id"]
     genres = get_artist_genres(sp, artist_id)
 
+    # Extract track ID from URI and construct external URL
+    track_id = result["uri"].split(':')[2]
+    external_url = f"https://open.spotify.com/track/{track_id}"
+
     return {
         "artist": " & ".join(artist["name"] for artist in result["artists"]),
         "artist_uri": result["artists"][0]["uri"],
@@ -125,7 +129,7 @@ def extract_track_info(sp, result):
         "track_number": result["track_number"],
         "popularity": result["popularity"],
         "genres": " / ".join(genres),
+        "external_url": external_url
     }
-
 
 # -----------------------------------------

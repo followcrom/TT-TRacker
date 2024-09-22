@@ -302,7 +302,7 @@ Ensure that **ALLOWED_HOSTS** includes your domain names and IP address. Django 
 In `/etc/nginx/` there is both a `sites-available` and `sites-enabled` dir. Create a symlink to sites-enabled:
 
 ```bash
-ln -s /etc/nginx/sites-available/ttt /etc/nginx/sites-enabled`
+ln -s /etc/nginx/sites-available/ttt /etc/nginx/sites-enabled
 ```
 
 **Step 17**: Test Nginx Configuration

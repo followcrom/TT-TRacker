@@ -128,6 +128,8 @@ python manage.py runserver 8080
 
 # Launching on Digital Ocean 🌊🪸🐚🐬
 
+This can be largely automated with `launch-ttt.sh`.
+
 **Step 1**: Create a Digital Ocean Droplet
 
 **Step 2**: Use SSH to connect to new droplet. I'm using the SSH key pair I created for the domdom project.

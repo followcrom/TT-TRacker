@@ -22,6 +22,7 @@
         <th>Mood</th>
         <th>Genres</th>
         <th>Listen</th>
+        <th>More</th>
         <th>Add</th>
     </tr>
 
@@ -44,6 +45,9 @@
         </td>
         <td class="uris"><i class="fa-brands fa-spotify"></i>
             <a class="uri" href="{{ track.uri }}" target="_blank">Open <i>{{ track.song }}</i></a>
+        </td>
+        <td class="uris"><i class="fa-solid fa-magnifying-glass" style="color: orange;"></i>
+            <a class="more" href="{{ track.artist_uri }}" target="_blank">More from <i>{{ track.artist }}</i></a>
         </td>
         <td class="add">
             <form class="trending-form" method="post">

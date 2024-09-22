@@ -332,6 +332,23 @@ ufw enable
 ufw status verbose
 ```
 
+**Step 19.1**: Upload Secrets Separately
+
+Upload the `.env` file to the `/var/www/ttt/tttracker/` directory.
+
+Make sure the `.env` file has the correct permissions so that Django can access it.
+
+```bash
+chown www-data:www-data /var/www/ttt/.env
+chmod 600 /var/www/ttt/.env
+```
+
+Once you've confirmed that the .env file is in place and being read, reload Gunicorn to apply the changes:
+
+```bash
+systemctl restart ttt.service
+```
+
 **Step 20**: Verify and Launch / Restart the Services (if necessary)
 
 1️⃣ Restart Gunicorn First
@@ -356,7 +373,7 @@ systemctl status nginx
 
 Open your web browser and go to your droplet's IP address or domain name.
 
-🤩 [Top Track Tracker on Digital Ocean](https://ttt.followcrom.online/) 😎👌🔥
+🤩 [Top Track Tracker on Digital Ocean](https://ttt.followcrom.com/) 😎👌🔥
 
 <br>
 

@@ -14,7 +14,7 @@ mkdir -p /var/www/ttt
 cd /var/www/ttt
 
 # Clone the repository (from DESKTOP branch)
-git clone --branch DESKTOP https://github.com/followcrom/TopTrackTracker.git .
+git clone --depth 1 --branch DESKTOP https://github.com/followcrom/TopTrackTracker.git .
 
 # Set up the Python virtual environment
 python3 -m venv .venv
@@ -54,7 +54,12 @@ systemctl status ttt.service --no-pager
 
 # Ensure correct permissions for the app directory
 chown -R www-data:www-data /var/www/ttt
-chmod -R 755 /var/www/ttt
+
+# Set permissions for directories
+find /var/www/ttt -type d -exec chmod 755 {} \;
+
+# Set permissions for other files
+# find /var/www/ttt -type f \( -name "*.py" -o -name "*.sqlite3" -o -name "*.md" -o -name "*.html" \) -exec chmod 644 {} \;
 
 # Configure Nginx as a reverse proxy to forward requests to Gunicorn
 cat > /etc/nginx/sites-available/ttt <<EOF

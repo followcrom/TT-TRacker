@@ -157,7 +157,7 @@ def lastfm_play_count(username, api_key):
             # Extract the desired information for each track
             for track in top_tracks:
                 artist_name = track.get("artist", {}).get("name", "")
-                if artist_name in ["Cher", "Meat Loaf"]:
+                if artist_name in ["Cher", "Meat Loaf", "Sting", "O'Connor"]:
                     continue
                 track_info = {
                     "name": track.get("name", ""),

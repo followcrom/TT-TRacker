@@ -70,7 +70,9 @@
             {{ track.genres }}
         </td>
         <td class="uris"><i class="fa-brands fa-spotify"></i>
-            <a class="uri" href="{{ track.uri }}" target="_blank">Open <i>{{ track.song }}</i></a>
+            {% with track_id=track.uri.split(':')|last %}
+                <a class="uri" href="https://open.spotify.com/track/{{ track_id }}" target="_blank">Open <i>{{ track.song }}</i></a>
+            {% endwith %}
         </td>
         <td class="uris"><i class="fa-solid fa-magnifying-glass" style="color: orange;"></i>
             <a class="more" href="{{ track.artist_uri }}" target="_blank">More from <i>{{ track.artist }}</i></a>

@@ -24,6 +24,16 @@ python manage.py runserver 8000
 
 This starts Django's built-in development server.
 
+## Update the service 
+
+```bash
+systemctl restart ttt.service
+```
+
+```bash
+systemctl status ttt.service
+```
+
 ## Run dev server on the AWS instance 👦
 
 🆕 **Untested**

@@ -243,7 +243,7 @@ Follow the prompts to create the superuser.
 
 ### Create a new AWS user 
 
-Navigate to https://tttapp.followcrom.online/admin/ and log in with the AWS superuser credentials. In the admin interface, "Add User".
+Navigate to https://ttt.followcrom.com/admin/ and log in with the AWS superuser credentials. In the admin interface, "Add User".
 
 ### Create a new local user
 
@@ -272,7 +272,7 @@ curl --request GET \
 ### Use curl to test the callback URL:
 
 ```bash
-curl "https://tttapp.followcrom.online/callback/?code=<auth-code>"
+curl "https://ttt.followcrom.com/callback/?code=<auth-code>"
 
 # Here's an example of what the command might look like:
 curl "http://localhost:8000/callback/?code=AQBx9dKc..."
@@ -315,7 +315,7 @@ More secure:
 
 ```bash
 <Directory /home/bitnami/djangoapp/tttracker>
-    Header set Access-Control-Allow-Origin "https://tttapp.followcrom.online"
+    Header set Access-Control-Allow-Origin "https://ttt.followcrom.com"
     <Files wsgi.py>
         Require all granted
     </Files>

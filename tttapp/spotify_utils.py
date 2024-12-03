@@ -1,8 +1,8 @@
 # spotify_utils.py
 
 from spotipy import SpotifyException
-import logging
-logger = logging.getLogger(__name__)
+# import logging
+# logger = logging.getLogger(__name__)
 
 
 def fetch_top_tracks(sp, time_range, limit, offset):
@@ -14,13 +14,13 @@ def fetch_top_tracks(sp, time_range, limit, offset):
 
         tracks = process_spotify_results(sp, results)
 
-        add_audio_features_to_tracks(sp, tracks)
+        # add_audio_features_to_tracks(sp, tracks)
 
         return tracks
 
     except SpotifyException as e:
-        logger.error(f"Spotify API request failed: Status {e.http_status}")
-        logger.error(f"\nResponse headers: {e.headers}")
+        print(f"Spotify API request failed: Status {e.http_status}")
+        print(f"\nResponse headers: {e.headers}")
         return None
 
 
@@ -116,7 +116,8 @@ def extract_track_info(sp, result):
     genres = get_artist_genres(sp, artist_id)
 
     # Extract track ID from URI and construct external URL
-    track_id = result["uri"].split(':')[2]
+    # This will open the track in a browser, which I currently don't want
+    track_id = result["uri"].split(':')[2] # could be [-1]?
     external_url = f"https://open.spotify.com/track/{track_id}"
 
     return {

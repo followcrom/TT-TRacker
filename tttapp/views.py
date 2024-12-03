@@ -37,6 +37,7 @@ def top_tracks(request, time_range, name, context):
     if offset + limit <= total_tracks:
         tracks = fetch_top_tracks(sp, time_range, limit=limit, offset=offset)
         print("Tracks in.")
+        # print(f"Tracks: {tracks}")
 
         if offset >= 40:
             show_forward = False

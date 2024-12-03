@@ -18,11 +18,11 @@ def add_to_trending(request):
         popularity = request.POST.get("popularity")
         album = request.POST.get("album")
         genres = request.POST.get("genres")
-        energy = request.POST.get("energy")
-        key = request.POST.get("key")
-        valence = request.POST.get("valence")
-        mood = request.POST.get("mood")
-        tempo = request.POST.get("tempo")
+        # energy = request.POST.get("energy")
+        # key = request.POST.get("key")
+        # valence = request.POST.get("valence")
+        # mood = request.POST.get("mood")
+        # tempo = request.POST.get("tempo")
         artist_uri = request.POST.get("artist_uri")
 
         # Check if the entry with the same URI already exists
@@ -37,11 +37,11 @@ def add_to_trending(request):
                 popularity=popularity,
                 album=album,
                 genres=genres,
-                energy=energy,
-                key=key,
-                valence=valence,
-                mood=mood,
-                tempo=tempo,
+                # energy=energy,
+                # key=key,
+                # valence=valence,
+                # mood=mood,
+                # tempo=tempo,
                 artist_uri=artist_uri,
             )
             return JsonResponse(
@@ -57,12 +57,18 @@ def add_to_trending(request):
 def view_trending_tracks(request):
     trending_tracks = TrendingTracks.objects.all().order_by("-id")
 
+    # Preprocess uri to construct external URL
+    # This will open the track in browser rather than app, which I currently don't want
+    # for track in trending_tracks:
+    #     track.track_id = track.uri.split(':')[-1]
+
     name = "Trending Tracks"
     return render(
         request,
         "trending_tracks.html",
         {"trending_tracks": trending_tracks, "name": name},
     )
+
 
 
 # -----------------------------------------
@@ -113,11 +119,6 @@ def export_trending_tracks(request):
             "Popularity",
             "URI",
             "Genres",
-            "Energy",
-            "Key",
-            "Valence",
-            "Mood",
-            "Tempo",
             "Artist URI",
         ]
     )
@@ -132,11 +133,6 @@ def export_trending_tracks(request):
                 track.popularity,
                 track.uri,
                 track.genres,
-                track.energy,
-                track.key,
-                track.valence,
-                track.mood,
-                track.tempo,
                 track.artist_uri,
             ]
         )
@@ -192,12 +188,7 @@ def upload_trending_tracks(request):
                         popularity=row[4],
                         uri=uri,
                         genres=row[6],
-                        energy=row[7],
-                        key=row[8],
-                        valence=row[9],
-                        mood=row[10],
-                        tempo=row[11],
-                        artist_uri=row[12],
+                        artist_uri=row[7],
                     )
                 )
 

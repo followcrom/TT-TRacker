@@ -80,16 +80,6 @@ This will prompt you to confirm the upload of your static files to the S3 bucket
 
 Once the static files have been uploaded to the S3 bucket, you can comment out the Local static settings to use the S3 static files.
 
-# Apache 🐎
-
-### Connect to LightSail instance
-
-Security group rule means that only my IP can access the instance.
-
-```bash
-ssh -i ~/.ssh/ttt-lightsail.pem bitnami@18.171.147.94
-```
-
 # Logs 📝
 
 ### Access Logs:
@@ -212,11 +202,11 @@ Fields:
   - popularity
   - uri
   - genres
-  - energy
-  - key
-  - valence
-  - mood
-  - tempo
+  - energy (deprecated)
+  - key (deprecated)
+  - valence (deprecated)
+  - mood (deprecated)
+  - tempo (deprecated)
   - artist_uri
 
 <br>

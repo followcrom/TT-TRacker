@@ -219,7 +219,8 @@ After=network.target
 User=root
 Group=www-data
 WorkingDirectory=/var/www/ttt
-ExecStart=/var/www/ttt/.venv/bin/gunicorn --access-logfile - --workers 3 --bind unix:/var/www/ttt/tttracker.sock tttracker.wsgi:application
+; ExecStart=/var/www/ttt/.venv/bin/gunicorn --access-logfile - --workers 3 --bind unix:/var/www/ttt/tttracker.sock tttracker.wsgi:application
+ExecStart=/var/www/ttt/.venv/bin/gunicorn --access-logfile /var/www/ttt/logs/ttt_access.log --error-logfile /var/www/ttt/logs/ttt_error.log --capture-output --workers 3 --bind unix:/var/www/ttt/tttracker.sock tttracker.wsgi:application --log-level=info
 
 [Install]
 WantedBy=multi-user.target
@@ -417,7 +418,7 @@ Found the following certs:
 **Step 5**: Handle unused Let's Encrypt certificates
 
 ```bash
-certbot revoke --cert-path /ec/letsencrypt/live/ttt.followcrom.online/fullchain.pem
+certbot revoke --cert-path /etc/letsencrypt/live/ttt.followcrom.online/fullchain.pem
 
 # Delete Unused Certificate:
 certbot delete
